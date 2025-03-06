@@ -5,12 +5,12 @@ import { PACKAGE_API_ENDPOINTS } from "@verdaccio/middleware";
 import type { PluginMiddleware } from "./types";
 
 import { ConfigHolder } from "./config";
-import { DB } from "./db";
+import { Database } from "./database";
 import logger from "./logger";
 import { getPackageVersion, isSuccessStatus } from "./utils";
 
-export class DownloadStats implements PluginMiddleware {
-  private db: DB | null = null;
+export class Stats implements PluginMiddleware {
+  private db: Database | null = null;
 
   constructor(private config: ConfigHolder) {
     void this.init();
@@ -102,7 +102,7 @@ export class DownloadStats implements PluginMiddleware {
 
   private async init() {
     try {
-      this.db = await DB.create(this.config);
+      this.db = await Database.create(this.config);
     } catch (err) {
       logger.error({ err }, "Failed to create DB instance; @{err}");
       process.exit(1);

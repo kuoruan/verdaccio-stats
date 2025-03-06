@@ -12,7 +12,7 @@ export interface Options {
   isoWeek?: boolean;
 }
 
-export class DB {
+export class Database {
   private options: Options;
   private sequelize: Sequelize;
   private umzug: Umzug<Sequelize>;
@@ -37,7 +37,7 @@ export class DB {
   }
 
   static async create(opts: Options) {
-    const db = new DB(opts);
+    const db = new Database(opts);
 
     await db.migrate();
     await db.init();
