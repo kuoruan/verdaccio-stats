@@ -1,0 +1,28 @@
+import type { Logger } from "@verdaccio/types";
+
+import { plugin } from "./constants";
+
+function noop() {
+  /* noop */
+}
+
+const dummyLogger: Logger = {
+  child: () => dummyLogger,
+  debug: noop,
+  error: noop,
+  http: noop,
+  info: noop,
+  trace: noop,
+  warn: noop,
+};
+
+let logger: Logger = dummyLogger;
+
+export function setLogger(l?: Logger) {
+  if (!l) return;
+
+  logger = l.child({ plugin: { name: plugin.name } });
+  logger.info(plugin, "plugin loading: @{name}@@{version}");
+}
+
+export default logger;

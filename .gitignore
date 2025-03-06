@@ -1,0 +1,11 @@
+.env
+.vscode/
+*.log
+lib/
+node_modules/
+/verdaccio*
+.npmrc
+.yarnrc
+.history
+package-lock.json
+yarn.lock
