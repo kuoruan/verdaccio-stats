@@ -1,9 +1,7 @@
-import alias from "@rollup/plugin-alias";
 import json from "@rollup/plugin-json";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
 import { defineConfig } from "rollup";
 import { nodeExternals } from "rollup-plugin-node-externals";
 
@@ -30,9 +28,6 @@ export default defineConfig({
       deps: true,
       devDeps: true,
       peerDeps: true,
-    }),
-    alias({
-      entries: [{ find: "@", replacement: fileURLToPath(new URL("src", import.meta.url)) }],
     }),
     replace({
       preventAssignment: true,

@@ -1,26 +1,24 @@
-import { INTEGER, Sequelize, TEXT, type Transaction } from "sequelize";
+import debug from "debug";
+import { DataTypes, Sequelize, type Transaction } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
-import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "./constants";
-import { debug, getUmzugLogger } from "./debugger";
-import { migrations } from "./migrations";
-import { DownloadStats, ManifestViewStats, Package } from "./models";
-import { getPeriodValue } from "./utils";
+import type { ConfigHolder } from "../config";
 
-export interface Options {
-  file: string;
-  isoWeek?: boolean;
-}
+import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "../constants";
+import { getUmzugLogger } from "../debugger";
+import { migrations } from "../migrations";
+import { DownloadStats, ManifestViewStats, Package } from "../models";
+import { getPeriodValue } from "../utils";
 
 export class Database {
-  private options: Options;
+  private config: ConfigHolder;
   private sequelize: Sequelize;
   private umzug: Umzug<Sequelize>;
 
-  private constructor(opts: Options) {
+  private constructor(config: ConfigHolder) {
     const sequelize = new Sequelize({
       dialect: "sqlite",
-      storage: opts.file,
+      storage: config.file,
       logging: (sql) => debug(sql),
     });
 
@@ -31,13 +29,13 @@ export class Database {
       logger: getUmzugLogger(),
     });
 
-    this.options = opts;
+    this.config = config;
     this.sequelize = sequelize;
     this.umzug = umzug;
   }
 
-  static async create(opts: Options) {
-    const db = new Database(opts);
+  static async create(config: ConfigHolder) {
+    const db = new Database(config);
 
     await db.migrate();
     await db.init();
@@ -96,7 +94,7 @@ export class Database {
           where: {
             packageId: pkg.id,
             periodType: periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.options.isoWeek),
+            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
           },
           transaction,
         });
@@ -113,7 +111,7 @@ export class Database {
           where: {
             packageId: pkg.id,
             periodType: periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.options.isoWeek),
+            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
           },
           transaction,
         });
@@ -173,41 +171,51 @@ export class Database {
     await Promise.all([
       Package.init(
         {
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          name: { allowNull: false, type: TEXT },
-          version: { allowNull: false, type: TEXT },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          name: { allowNull: false, type: DataTypes.STRING(100) },
+          version: { allowNull: false, type: DataTypes.STRING(50) },
         },
         { sequelize: this.sequelize, tableName: "packages", underscored: true },
       ),
       DownloadStats.init(
         {
-          count: { allowNull: false, type: INTEGER, defaultValue: 0 },
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          packageId: { allowNull: false, type: INTEGER },
-          periodType: { allowNull: false, type: TEXT },
-          periodValue: { allowNull: false, type: TEXT },
+          count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
+          periodType: { allowNull: false, type: DataTypes.STRING(20) },
+          periodValue: { allowNull: false, type: DataTypes.STRING(20) },
         },
         { sequelize: this.sequelize, tableName: "download_stats", underscored: true },
       ),
       ManifestViewStats.init(
         {
-          count: { allowNull: false, type: INTEGER, defaultValue: 0 },
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          packageId: { allowNull: false, type: INTEGER },
-          periodType: { allowNull: false, type: TEXT },
-          periodValue: { allowNull: false, type: TEXT },
+          count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
+          periodType: { allowNull: false, type: DataTypes.STRING(20) },
+          periodValue: { allowNull: false, type: DataTypes.STRING(20) },
         },
         { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
       ),
     ]);
 
     Package.hasMany(DownloadStats, {
+      sourceKey: "id",
       foreignKey: "packageId",
     });
     Package.hasMany(ManifestViewStats, {
+      sourceKey: "id",
       foreignKey: "packageId",
     });
-    DownloadStats.belongsTo(Package);
-    ManifestViewStats.belongsTo(Package);
+    DownloadStats.belongsTo(Package, {
+      targetKey: "id",
+      foreignKey: "packageId",
+      as: "package",
+    });
+    ManifestViewStats.belongsTo(Package, {
+      targetKey: "id",
+      foreignKey: "packageId",
+      as: "package",
+    });
   }
 }

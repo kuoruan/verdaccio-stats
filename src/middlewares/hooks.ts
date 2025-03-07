@@ -1,20 +1,19 @@
 import type { Application, Handler } from "express";
 
+import { tarballUtils } from "@verdaccio/core";
 import { PACKAGE_API_ENDPOINTS } from "@verdaccio/middleware";
 
-import type { PluginMiddleware } from "./types";
+import type { ConfigHolder } from "../config";
+import type { PluginMiddleware } from "../types";
 
-import { ConfigHolder } from "./config";
-import { Database } from "./database";
-import logger from "./logger";
-import { getPackageVersion, isSuccessStatus } from "./utils";
+import logger from "../logger";
+import { Database } from "../storage/db";
+import { isSuccessStatus } from "../utils";
 
-export class Stats implements PluginMiddleware {
+export class Hooks implements PluginMiddleware {
   private db: Database | null = null;
 
-  constructor(private config: ConfigHolder) {
-    void this.init();
-  }
+  constructor(private config: ConfigHolder) {}
 
   packageManifestHandler: Handler = (req, res, next) => {
     const db = this.db;
@@ -25,14 +24,21 @@ export class Stats implements PluginMiddleware {
       return next();
     }
 
+    const packageName = req.params.package;
+    const version = req.params.version;
+
+    if (packageName === "favicon.ico") {
+      logger.debug("Skipping manifest stats for favicon request");
+
+      return next();
+    }
+
     res.once("finish", () => {
       if (!isSuccessStatus(res.statusCode)) {
         logger.debug("Skipping manifest stats for non-2xx response");
+
         return;
       }
-
-      const packageName = req.params.package;
-      const version = req.params.version;
 
       if (!packageName) {
         logger.warn("Unexpected missing package name in request");
@@ -62,6 +68,10 @@ export class Stats implements PluginMiddleware {
     }
   }
 
+  public setDatabase(db: Database) {
+    this.db = db;
+  }
+
   tarballDownloadHandler: Handler = (req, res, next) => {
     const db = this.db;
 
@@ -71,22 +81,22 @@ export class Stats implements PluginMiddleware {
       return next();
     }
 
+    // react
+    const packageName = req.params.package;
+    // react-18.0.0.tgz
+    const filename = req.params.filename;
+
     res.once("finish", () => {
       if (!isSuccessStatus(res.statusCode)) {
         logger.debug("Skipping download stats for non-2xx response");
         return;
       }
 
-      // react
-      const packageName = req.params.package;
-      // react-18.0.0.tgz
-      const filename = req.params.filename;
-
       // react-18.0.0.tgz -> 18.0.0
-      const version = getPackageVersion(filename, packageName);
+      const version = tarballUtils.getVersionFromTarball(filename);
 
       if (!packageName || !version) {
-        logger.warn("Unexpected missing package name or version in request");
+        logger.warn("Unexpected missing package name or filename in request");
         return;
       }
 
@@ -99,13 +109,4 @@ export class Stats implements PluginMiddleware {
 
     return next();
   };
-
-  private async init() {
-    try {
-      this.db = await Database.create(this.config);
-    } catch (err) {
-      logger.error({ err }, "Failed to create DB instance; @{err}");
-      process.exit(1);
-    }
-  }
 }

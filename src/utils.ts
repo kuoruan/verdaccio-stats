@@ -7,23 +7,12 @@ import path from "node:path";
 
 import type { PeriodType, PeriodValue } from "./types";
 
-import { PERIOD_VALUE_TOTAL } from "./constants";
+import { API_BASE_PATH, PERIOD_VALUE_TOTAL } from "./constants";
 
 extend(advancedFormat);
 extend(weekYear);
 extend(weekOfYear);
 extend(isoWeek);
-
-/**
- * Get the package version from the filename.
- *
- * @param filename {string} - The filename.
- * @param packageName {string} - The package name.
- * @returns {string} The package version.
- */
-export function getPackageVersion(filename: string, packageName: string): string {
-  return filename.slice(packageName.length + 1, filename.lastIndexOf("."));
-}
 
 /**
  * Get the period value for the given period type.
@@ -75,4 +64,14 @@ export function isSuccessStatus(statusCode: number): boolean {
  */
 export function normalizeFilePath(configPath: string, targetPath: string): string {
   return path.isAbsolute(targetPath) ? targetPath : path.normalize(path.join(path.dirname(configPath), targetPath));
+}
+
+/**
+ * Wraps the given URL path for Verdaccio stats.
+ *
+ * @param urlPath {string} - The path to be wrapped.
+ * @returns {string} The wrapped path.
+ */
+export function wrapPath(urlPath: string) {
+  return `${API_BASE_PATH}${urlPath}`;
 }

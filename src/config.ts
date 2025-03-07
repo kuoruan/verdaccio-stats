@@ -18,6 +18,8 @@ export interface ConfigHolder {
   countManifestViews: boolean;
   file: string;
   isoWeek: boolean;
+  logo?: string;
+  title: string;
 }
 
 export type StatsConfig = z.infer<typeof statsConfig>;
@@ -41,6 +43,14 @@ export class ParsedPluginConfig implements ConfigHolder {
 
   get isoWeek(): boolean {
     return this.config["iso-week"] ?? false;
+  }
+
+  get logo(): string | undefined {
+    return this.verdaccioConfig.web?.logo;
+  }
+
+  get title(): string {
+    return this.verdaccioConfig.web?.title ?? "Verdaccio Stats";
   }
 
   constructor(

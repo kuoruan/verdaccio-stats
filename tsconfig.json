@@ -16,13 +16,7 @@
     "noEmit": true,
     "noImplicitAny": false,
     "strict": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": null,
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
+    "skipLibCheck": true
   },
-  "include": ["src/*.ts"]
+  "include": ["src/**/*.ts"]
 }

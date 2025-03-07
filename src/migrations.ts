@@ -1,6 +1,6 @@
 import type { RunnableMigration } from "umzug";
 
-import { DATE, INTEGER, type Sequelize, TEXT } from "sequelize";
+import { DataTypes, type Sequelize } from "sequelize";
 
 import { UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "./constants";
 
@@ -12,29 +12,29 @@ export const migrations: RunnableMigration<Sequelize>[] = [
 
       await Promise.all([
         queryInterface.createTable("packages", {
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          name: { allowNull: false, type: TEXT },
-          version: { allowNull: false, type: TEXT },
-          created_at: { allowNull: false, type: DATE },
-          updated_at: { allowNull: false, type: DATE },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          name: { allowNull: false, type: DataTypes.STRING(100) },
+          version: { allowNull: false, type: DataTypes.STRING(50) },
+          created_at: { allowNull: false, type: DataTypes.DATE },
+          updated_at: { allowNull: false, type: DataTypes.DATE },
         }),
         queryInterface.createTable("download_stats", {
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          package_id: { allowNull: false, type: INTEGER },
-          period_type: { allowNull: false, type: TEXT },
-          period_value: { allowNull: false, type: TEXT },
-          count: { allowNull: false, type: INTEGER, defaultValue: 0 },
-          created_at: { allowNull: false, type: DATE },
-          updated_at: { allowNull: false, type: DATE },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          package_id: { allowNull: false, type: DataTypes.INTEGER },
+          period_type: { allowNull: false, type: DataTypes.STRING(20) },
+          period_value: { allowNull: false, type: DataTypes.STRING(20) },
+          count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+          created_at: { allowNull: false, type: DataTypes.DATE },
+          updated_at: { allowNull: false, type: DataTypes.DATE },
         }),
         queryInterface.createTable("manifest_view_stats", {
-          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: INTEGER },
-          package_id: { allowNull: false, type: INTEGER },
-          period_type: { allowNull: false, type: TEXT },
-          period_value: { allowNull: false, type: TEXT },
-          count: { allowNull: false, type: INTEGER, defaultValue: 0 },
-          created_at: { allowNull: false, type: DATE },
-          updated_at: { allowNull: false, type: DATE },
+          id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+          package_id: { allowNull: false, type: DataTypes.INTEGER },
+          period_type: { allowNull: false, type: DataTypes.STRING(20) },
+          period_value: { allowNull: false, type: DataTypes.STRING(20) },
+          count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+          created_at: { allowNull: false, type: DataTypes.DATE },
+          updated_at: { allowNull: false, type: DataTypes.DATE },
         }),
       ]);
 

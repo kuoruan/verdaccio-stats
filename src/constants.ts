@@ -16,3 +16,5 @@ export const PERIOD_TYPES = ["overall", "daily", "monthly", "weekly", "yearly"] 
 export const PERIOD_VALUE_TOTAL = "total";
 
 export const DEFAULT_SQLITE_FILE = "stats.db";
+
+export const API_BASE_PATH = "/-/verdaccio/stats";

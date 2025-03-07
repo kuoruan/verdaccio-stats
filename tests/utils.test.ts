@@ -3,15 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { PERIOD_VALUE_TOTAL } from "../src/constants";
-import { getPackageVersion, getPeriodValue, normalizeFilePath } from "../src/utils";
-
-describe("getPackageVersion", () => {
-  it("should extract version from filename", () => {
-    expect(getPackageVersion("package-1.2.3.tgz", "package")).toBe("1.2.3");
-    expect(getPackageVersion("@scope/pkg-0.1.0.tgz", "@scope/pkg")).toBe("0.1.0");
-    expect(getPackageVersion("pkg-1.0.0-beta.1.tgz", "pkg")).toBe("1.0.0-beta.1");
-  });
-});
+import { getPeriodValue, normalizeFilePath } from "../src/utils";
 
 describe("getPeriodValue", () => {
   const testDate = dayjs("2023-05-15");

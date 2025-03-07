@@ -9,3 +9,4 @@ node_modules/
 .history
 package-lock.json
 yarn.lock
+.adminjs

@@ -4,6 +4,7 @@
   "description": "The stats plugin for Verdaccio",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "start": "cross-env DEBUG='verdaccio:*' node_modules/verdaccio/bin/verdaccio -c verdaccio/verdaccio.yml",
     "build": "rimraf dist && rollup -c --environment NODE_ENV:production",
@@ -12,7 +13,11 @@
     "test": "vitest --run",
     "prepublishOnly": "pnpm run build"
   },
-  "keywords": ["verdaccio", "plugin", "stats"],
+  "keywords": [
+    "verdaccio",
+    "plugin",
+    "stats"
+  ],
   "files": [
     "lib"
   ],
@@ -20,20 +25,17 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.21.0",
-    "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/debug": "^4.1.12",
     "@types/express": "^5.0.0",
-    "@verdaccio/core": "6.0.0-6-next.76",
-    "@verdaccio/middleware": "8.0.0-next-8.10",
     "@verdaccio/types": "13.0.0-next-8.3",
     "cross-env": "^7.0.3",
     "eslint": "^9.21.0",
-    "eslint-config-prettier": "^10.0.1",
+    "eslint-config-prettier": "^10.0.2",
     "eslint-import-resolver-next": "^0.4.2",
     "eslint-plugin-import-x": "^4.6.1",
     "eslint-plugin-perfectionist": "^4.9.0",
@@ -41,16 +43,16 @@
     "eslint-plugin-unicorn": "^57.0.0",
     "express": "^4.21.2",
     "globals": "^16.0.0",
-    "prettier": "^3.5.2",
+    "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.34.8",
+    "rollup": "^4.34.9",
     "rollup-plugin-node-externals": "^8.0.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.25.0",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0",
     "verdaccio": "^6.0.5",
     "verdaccio-stats": "file:",
-    "vitest": "^3.0.7"
+    "vitest": "^3.0.8"
   },
   "peerDependencies": {
     "verdaccio": "^5.0.0||^6.0.0"
@@ -59,11 +61,25 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@adminjs/express": "^6.1.1",
+    "@adminjs/sequelize": "^4.1.1",
+    "@verdaccio/core": "8.0.0-next-8.10",
+    "@verdaccio/middleware": "8.0.0-next-8.10",
+    "adminjs": "^7.8.15",
     "dayjs": "^1.11.13",
     "debug": "^4.4.0",
     "sequelize": "^6.37.6",
     "sqlite3": "^5.1.7",
     "umzug": "^3.8.2",
     "zod": "^3.24.2"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@tiptap/core": "^2.1.0",
+        "@tiptap/pm": "^2.1.0",
+        "@types/react": "^19.0.0"
+      }
+    }
   }
 }
