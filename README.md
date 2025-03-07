@@ -36,7 +36,8 @@ Add the plugin to your Verdaccio config file:
 
 ```yaml
 middlewares:
-  verdaccio-stats:
+  stats:
+    enabled: true
     file: ./stats.db        # Optional, SQLite database
     iso-week: false         # Optional, whether to use ISO week format
     count-downloads: true   # Optional, whether to count downloads
