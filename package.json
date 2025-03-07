@@ -13,6 +13,7 @@
     "test": "vitest --run",
     "prepublishOnly": "pnpm run build"
   },
+  "repository": "https://github.com/kuoruan/verdaccio-stats.git",
   "keywords": [
     "verdaccio",
     "plugin",
