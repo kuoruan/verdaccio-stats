@@ -17,7 +17,7 @@ export default tseslint.config(
   ...configs.stylisticTypeChecked,
   pluginPerfectionist.configs["recommended-natural"],
   {
-    ignores: ["node_modules/", "lib/", ".history/"],
+    ignores: ["node_modules/", "lib/", ".history/", ".adminjs"],
   },
   {
     languageOptions: {
