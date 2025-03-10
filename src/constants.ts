@@ -11,7 +11,7 @@ export const UNIVERSE_PACKAGE_NAME = "**";
 
 export const UNIVERSE_PACKAGE_VERSION = "*";
 
-export const PERIOD_TYPES = ["overall", "daily", "monthly", "weekly", "yearly"] as const;
+export const PERIOD_TYPES = ["overall", "yearly", "monthly", "weekly", "daily"] as const;
 
 export const PERIOD_VALUE_TOTAL = "total";
 
