@@ -16,19 +16,12 @@ import { Database } from "../storage/db";
 import { addScope, isSuccessStatus } from "../utils";
 
 export class Hooks implements PluginMiddleware {
-  private db: Database | null = null;
-
-  constructor(private config: ConfigHolder) {}
+  constructor(
+    private config: ConfigHolder,
+    private db: Database,
+  ) {}
 
   packageManifestHandler: Handler = (req, res, next) => {
-    const db = this.db;
-
-    if (!db) {
-      logger.warn("DB instance is not ready; skipping manifest stats");
-
-      return next();
-    }
-
     const scope = req.params.scope;
     const packageName = scope ? addScope(scope, req.params.package) : req.params.package;
     const version = req.params.version;
@@ -56,7 +49,7 @@ export class Hooks implements PluginMiddleware {
         "Adding manifest view stats for package @{packageName} version @{version}",
       );
 
-      db.addManifestViewCount(packageName, version).catch((err) => {
+      this.db.addManifestViewCount(packageName, version).catch((err) => {
         logger.error({ err }, "Failed to add manifest count; @{err}");
       });
     });
@@ -74,19 +67,7 @@ export class Hooks implements PluginMiddleware {
     }
   }
 
-  public setDatabase(db: Database) {
-    this.db = db;
-  }
-
   tarballDownloadHandler: Handler = (req, res, next) => {
-    const db = this.db;
-
-    if (!db) {
-      logger.warn("DB instance is not ready; skipping download stats");
-
-      return next();
-    }
-
     const scope = req.params.scope;
 
     // react / @vitejs/plugin-react
@@ -110,7 +91,7 @@ export class Hooks implements PluginMiddleware {
 
       logger.debug({ packageName, version }, "Adding download stats for package @{packageName} version @{version}");
 
-      db.addDownloadCount(packageName, version).catch((err) => {
+      this.db.addDownloadCount(packageName, version).catch((err) => {
         logger.error({ err }, "Failed to add download count; @{err}");
       });
     });

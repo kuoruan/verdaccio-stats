@@ -1,4 +1,4 @@
-import type { Application, Handler, Response } from "express";
+import type { Application, Handler } from "express";
 
 import type { ConfigHolder } from "../config";
 import type { PluginMiddleware } from "../types";
@@ -10,9 +10,10 @@ import { wrapPath } from "../utils";
  * NOTE: This middleware is not implemented yet.
  */
 export class Stats implements PluginMiddleware {
-  private db: Database | null = null;
-
-  constructor(private config: ConfigHolder) {}
+  constructor(
+    private config: ConfigHolder,
+    private db: Database,
+  ) {}
 
   register_middlewares(app: Application): void {
     app.get(wrapPath("/downloads/latest"), this.notImplementedHandler);
@@ -26,22 +27,7 @@ export class Stats implements PluginMiddleware {
     app.get(wrapPath("/manifest/views/package/:package/:version?"), this.notImplementedHandler);
   }
 
-  public setDatabase(db: Database) {
-    this.db = db;
-  }
-
-  private checkDatabase(db: Database | null, res: Response): db is Database {
-    if (!db) {
-      res.sendStatus(500).send("Database not set");
-
-      return false;
-    }
-    return true;
-  }
-
   private notImplementedHandler: Handler = (req, res) => {
-    if (!this.checkDatabase(this.db, res)) return;
-
     res.sendStatus(501).send("Not implemented");
   };
 }

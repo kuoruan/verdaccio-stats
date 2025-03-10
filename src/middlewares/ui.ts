@@ -52,10 +52,7 @@ export class UI implements PluginMiddleware {
       import("@adminjs/sequelize").then((mod) => mod.default),
     ]);
 
-    AdminJS.registerAdapter({
-      Resource: AdminJSSequelize.Resource,
-      Database: AdminJSSequelize.Database,
-    });
+    AdminJS.registerAdapter(AdminJSSequelize);
 
     const admin = new AdminJS({
       resources: [
@@ -70,36 +67,38 @@ export class UI implements PluginMiddleware {
             sort: { sortBy: "createdAt", direction: "desc" },
           },
         },
-        this.config.countDownloads && {
-          resource: DownloadStats,
-          options: {
-            actions: { ...defaultActions },
-            properties: {
-              periodType: {
-                availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
+        this.config.countDownloads &&
+          ({
+            resource: DownloadStats,
+            options: {
+              actions: { ...defaultActions },
+              properties: {
+                periodType: {
+                  availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
+                },
               },
+              listProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
+              showProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
+              filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
+              sort: { sortBy: "updatedAt", direction: "desc" },
             },
-            listProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
-            showProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
-            filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
-            sort: { sortBy: "updatedAt", direction: "desc" },
-          },
-        },
-        this.config.countManifestViews && {
-          resource: ManifestViewStats,
-          options: {
-            actions: { ...defaultActions },
-            properties: {
-              periodType: {
-                availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
+          } satisfies ResourceWithOptions),
+        this.config.countManifestViews &&
+          ({
+            resource: ManifestViewStats,
+            options: {
+              actions: { ...defaultActions },
+              properties: {
+                periodType: {
+                  availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
+                },
               },
+              listProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
+              showProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
+              filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
+              sort: { sortBy: "updatedAt", direction: "desc" },
             },
-            listProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
-            showProperties: ["id", "packageId", "periodType", "periodValue", "count", "createdAt", "updatedAt"],
-            filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
-            sort: { sortBy: "updatedAt", direction: "desc" },
-          },
-        },
+          } satisfies ResourceWithOptions),
       ].filter(Boolean) as ResourceWithOptions[],
       rootPath: rootPath,
       branding: {

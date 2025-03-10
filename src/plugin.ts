@@ -16,6 +16,7 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
     return +plugin.version;
   }
 
+  private db: Database;
   private parsedConfig: ParsedPluginConfig;
 
   constructor(
@@ -25,6 +26,15 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
     setLogger(options.logger);
 
     this.parsedConfig = new ParsedPluginConfig(config, options.config);
+
+    const db = new Database(this.parsedConfig);
+
+    db.migrate().catch((err) => {
+      logger.error({ err }, "Failed to migrate database; @{err}");
+      process.exit(1);
+    });
+
+    this.db = db;
   }
 
   getVersion(): number {
@@ -32,19 +42,9 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
   }
 
   register_middlewares(app: Express): void {
-    const db = Database.create(this.parsedConfig);
-
-    const hooks = new Hooks(this.parsedConfig);
-    const stats = new Stats(this.parsedConfig);
+    const hooks = new Hooks(this.parsedConfig, this.db);
+    const stats = new Stats(this.parsedConfig, this.db);
     const ui = new UI(this.parsedConfig);
-
-    db.then((db) => {
-      hooks.setDatabase(db);
-      stats.setDatabase(db);
-    }).catch((err) => {
-      logger.error({ err }, "Failed to initialize database; @{err}");
-      process.exit(1);
-    });
 
     for (const middleware of [hooks, stats, ui] satisfies PluginMiddleware[]) {
       middleware.register_middlewares(app);
