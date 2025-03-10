@@ -16,6 +16,7 @@ const statsConfig = z.object({
 export interface ConfigHolder {
   countDownloads: boolean;
   countManifestViews: boolean;
+  favicon: string;
   file: string;
   isoWeek: boolean;
   logo?: string;
@@ -35,6 +36,10 @@ export class ParsedPluginConfig implements ConfigHolder {
 
   get countManifestViews(): boolean {
     return this.config["count-manifest-views"] ?? true;
+  }
+
+  get favicon(): string {
+    return this.verdaccioConfig.web?.favicon ?? "/-/static/favicon.ico";
   }
 
   get file(): string {

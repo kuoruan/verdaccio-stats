@@ -104,6 +104,7 @@ export class UI implements PluginMiddleware {
       branding: {
         companyName: this.config.title,
         logo: this.config.logo,
+        favicon: this.config.favicon,
       },
       env: {
         ADMIN_JS_SKIP_BUNDLE: "true",
