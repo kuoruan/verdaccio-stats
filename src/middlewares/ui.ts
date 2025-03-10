@@ -70,7 +70,7 @@ export class UI implements PluginMiddleware {
             sort: { sortBy: "createdAt", direction: "desc" },
           },
         },
-        {
+        this.config.countDownloads && {
           resource: DownloadStats,
           options: {
             actions: { ...defaultActions },
@@ -85,7 +85,7 @@ export class UI implements PluginMiddleware {
             sort: { sortBy: "updatedAt", direction: "desc" },
           },
         },
-        {
+        this.config.countManifestViews && {
           resource: ManifestViewStats,
           options: {
             actions: { ...defaultActions },
@@ -100,7 +100,7 @@ export class UI implements PluginMiddleware {
             sort: { sortBy: "updatedAt", direction: "desc" },
           },
         },
-      ] satisfies ResourceWithOptions[],
+      ].filter(Boolean) as ResourceWithOptions[],
       rootPath: rootPath,
       branding: {
         companyName: this.config.title,
