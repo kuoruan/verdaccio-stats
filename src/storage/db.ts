@@ -20,6 +20,15 @@ export class Database {
       dialect: "sqlite",
       storage: config.file,
       logging: (sql) => debug(sql),
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30_000,
+        idle: 10_000,
+      },
+      dialectOptions: {
+        timeout: 30_000,
+      },
     });
 
     const umzug = new Umzug({
@@ -40,11 +49,9 @@ export class Database {
     const t = await this.sequelize.transaction();
 
     try {
-      await Promise.all([
-        this.addTotalDownloadCount(t),
-        this.addPackageDownloadCount(packageName, UNIVERSE_PACKAGE_VERSION, t),
-        this.addPackageDownloadCount(packageName, version, t),
-      ]);
+      await this.addTotalDownloadCount(t);
+      await this.addPackageDownloadCount(packageName, UNIVERSE_PACKAGE_VERSION, t);
+      await this.addPackageDownloadCount(packageName, version, t);
 
       await t.commit();
     } catch (err) {
@@ -57,13 +64,11 @@ export class Database {
     const t = await this.sequelize.transaction();
 
     try {
-      await Promise.all(
-        [
-          this.addTotalManifestViewCount(t),
-          this.addPackageManifestViewCount(packageName, UNIVERSE_PACKAGE_VERSION, t),
-          version && this.addPackageManifestViewCount(packageName, version, t),
-        ].filter(Boolean),
-      );
+      await this.addTotalManifestViewCount(t);
+      await this.addPackageManifestViewCount(packageName, UNIVERSE_PACKAGE_VERSION, t);
+      if (version) {
+        await this.addPackageManifestViewCount(packageName, version, t);
+      }
 
       await t.commit();
     } catch (err) {
@@ -85,73 +90,70 @@ export class Database {
   }
 
   private async addDownloadForAllPeriod(pkg: Package, transaction: Transaction) {
-    return Promise.all(
-      PERIOD_TYPES.map(async (periodType) => {
-        const [downloadStats] = await DownloadStats.findOrCreate({
-          where: {
-            packageId: pkg.id,
-            periodType: periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
-          },
-          transaction,
-        });
+    for (const periodType of PERIOD_TYPES) {
+      const [downloadStats] = await DownloadStats.findOrCreate({
+        where: {
+          packageId: pkg.id,
+          periodType,
+          periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+        },
+        transaction,
+      });
 
-        return downloadStats.increment("count", { by: 1, transaction });
-      }),
-    );
+      await downloadStats.increment("count", { by: 1, transaction });
+    }
   }
 
   private async addManifestViewForAllPeriod(pkg: Package, transaction: Transaction) {
-    return Promise.all(
-      PERIOD_TYPES.map(async (periodType) => {
-        const [manifestViewStats] = await ManifestViewStats.findOrCreate({
-          where: {
-            packageId: pkg.id,
-            periodType: periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
-          },
-          transaction,
-        });
+    for (const periodType of PERIOD_TYPES) {
+      const [manifestViewStats] = await ManifestViewStats.findOrCreate({
+        where: {
+          packageId: pkg.id,
+          periodType,
+          periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+        },
+        transaction,
+      });
 
-        return manifestViewStats.increment("count", { by: 1, transaction });
-      }),
-    );
+      await manifestViewStats.increment("count", { by: 1, transaction });
+    }
   }
 
   private async addPackageDownloadCount(packageName: string, version: string, transaction: Transaction) {
-    const [pkg] = await Package.findOrCreate({ where: { name: packageName, version }, transaction });
-
-    if (!pkg) {
-      throw new Error("Package not found");
-    }
+    const pkg = await this.ensurePackageExists(packageName, version, transaction);
 
     return this.addDownloadForAllPeriod(pkg, transaction);
   }
 
   private async addPackageManifestViewCount(packageName: string, version: string, transaction: Transaction) {
-    const [pkg] = await Package.findOrCreate({ where: { name: packageName, version }, transaction });
-
-    if (!pkg) {
-      throw new Error("Package not found");
-    }
+    const pkg = await this.ensurePackageExists(packageName, version, transaction);
 
     return this.addManifestViewForAllPeriod(pkg, transaction);
   }
 
   private async addTotalDownloadCount(transaction: Transaction) {
-    const universePkg = await Package.findOne({
-      where: { name: UNIVERSE_PACKAGE_NAME, version: UNIVERSE_PACKAGE_VERSION },
-      transaction,
-    });
-
-    if (!universePkg) {
-      throw new Error("Universe package not found");
-    }
+    const universePkg = await this.ensureUniversePackageExists(transaction);
 
     return this.addDownloadForAllPeriod(universePkg, transaction);
   }
 
   private async addTotalManifestViewCount(transaction: Transaction) {
+    const universePkg = await this.ensureUniversePackageExists(transaction);
+
+    return this.addManifestViewForAllPeriod(universePkg, transaction);
+  }
+
+  private async ensurePackageExists(packageName: string, version: string, transaction: Transaction): Promise<Package> {
+    const [pkg] = await Package.findOrCreate({ where: { name: packageName, version }, transaction });
+
+    if (!pkg) {
+      throw new Error(`Package ${packageName}@${version} not found and could not be created`);
+    }
+
+    return pkg;
+  }
+
+  private async ensureUniversePackageExists(transaction: Transaction): Promise<Package> {
     const universePkg = await Package.findOne({
       where: { name: UNIVERSE_PACKAGE_NAME, version: UNIVERSE_PACKAGE_VERSION },
       transaction,
@@ -161,7 +163,7 @@ export class Database {
       throw new Error("Universe package not found");
     }
 
-    return this.addManifestViewForAllPeriod(universePkg, transaction);
+    return universePkg;
   }
 
   private init() {
@@ -190,7 +192,11 @@ export class Database {
         periodType: { allowNull: false, type: DataTypes.STRING(20) },
         periodValue: { allowNull: false, type: DataTypes.STRING(20) },
       },
-      { sequelize: this.sequelize, tableName: "download_stats", underscored: true },
+      {
+        sequelize: this.sequelize,
+        tableName: "download_stats",
+        underscored: true,
+      },
     );
     ManifestViewStats.init(
       {
