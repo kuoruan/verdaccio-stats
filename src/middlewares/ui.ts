@@ -14,7 +14,7 @@ import { PERIOD_TYPES } from "../constants";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
 import { wrapPath } from "../utils";
 
-const rootPath = wrapPath("/admin");
+const rootPath = wrapPath("/ui");
 
 const defaultActions = {
   new: { isAccessible: false },
@@ -28,7 +28,7 @@ process.env.ADMIN_JS_SKIP_BUNDLE = "true";
 /**
  * Add Admin UI to the application.
  */
-export class AdminUI implements PluginMiddleware {
+export class UI implements PluginMiddleware {
   private adminRouter: null | Router = null;
 
   private config: ConfigHolder;
@@ -114,9 +114,9 @@ export class AdminUI implements PluginMiddleware {
           options: {
             actions: {
               ...defaultActions,
-              show: { after: AdminUI.populatePackageIdShowProperties },
-              list: { after: AdminUI.populatePackageIdListProperties },
-              search: { after: AdminUI.populatePackageIdSearchProperties },
+              show: { after: UI.populatePackageIdShowProperties },
+              list: { after: UI.populatePackageIdListProperties },
+              search: { after: UI.populatePackageIdSearchProperties },
             },
             properties: {
               periodType: {
@@ -134,9 +134,9 @@ export class AdminUI implements PluginMiddleware {
           options: {
             actions: {
               ...defaultActions,
-              show: { after: AdminUI.populatePackageIdShowProperties },
-              list: { after: AdminUI.populatePackageIdListProperties },
-              search: { after: AdminUI.populatePackageIdSearchProperties },
+              show: { after: UI.populatePackageIdShowProperties },
+              list: { after: UI.populatePackageIdListProperties },
+              search: { after: UI.populatePackageIdSearchProperties },
             },
             properties: {
               periodType: {

@@ -6,9 +6,9 @@ import type { PluginMiddleware } from "./types";
 import { ParsedPluginConfig, type StatsConfig } from "./config";
 import { plugin } from "./constants";
 import logger, { setLogger } from "./logger";
-import { AdminUI } from "./middlewares/admin-ui";
 import { Hooks } from "./middlewares/hooks";
 import { Stats } from "./middlewares/stats";
+import { UI } from "./middlewares/ui";
 import { Database } from "./storage/db";
 
 export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never, never> {
@@ -36,7 +36,7 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
 
     const hooks = new Hooks(this.parsedConfig);
     const stats = new Stats(this.parsedConfig);
-    const adminUI = new AdminUI(this.parsedConfig);
+    const ui = new UI(this.parsedConfig);
 
     db.then((db) => {
       hooks.setDatabase(db);
@@ -46,7 +46,7 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
       process.exit(1);
     });
 
-    for (const middleware of [hooks, stats, adminUI] satisfies PluginMiddleware[]) {
+    for (const middleware of [hooks, stats, ui] satisfies PluginMiddleware[]) {
       middleware.register_middlewares(app);
     }
   }
