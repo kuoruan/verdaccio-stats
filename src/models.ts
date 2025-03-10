@@ -31,6 +31,7 @@ export class ManifestViewStats extends Model<
 }
 
 export class Package extends Model<InferAttributes<Package>, InferCreationAttributes<Package>> {
+  declare readonly displayName: string;
   declare id: CreationOptional<number>;
   declare name: string;
   declare version: string;

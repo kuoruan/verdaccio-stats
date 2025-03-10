@@ -174,6 +174,15 @@ export class Database {
           id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
           name: { allowNull: false, type: DataTypes.STRING(100) },
           version: { allowNull: false, type: DataTypes.STRING(50) },
+          displayName: {
+            type: DataTypes.VIRTUAL,
+            get() {
+              return `${this.name}@${this.version}`;
+            },
+            set() {
+              throw new Error("Virtual property, cannot be set");
+            },
+          },
         },
         { sequelize: this.sequelize, tableName: "packages", underscored: true },
       ),

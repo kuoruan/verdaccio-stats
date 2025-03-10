@@ -1,10 +1,4 @@
-import type {
-  ListActionResponse,
-  RecordActionResponse,
-  ResourceOptions,
-  ResourceWithOptions,
-  SearchActionResponse,
-} from "adminjs";
+import type { ResourceOptions, ResourceWithOptions } from "adminjs";
 import type { Application, Router } from "express";
 
 import type { ConfigHolder } from "../config";
@@ -41,40 +35,6 @@ export class UI implements PluginMiddleware {
     });
   }
 
-  static populatePackageIdListProperties(this: void, response: ListActionResponse) {
-    for (const record of response.records) {
-      if (record.populated.packageId?.params) {
-        const params = record.populated.packageId.params;
-
-        record.populated.packageId.title = `${params.name}@${params.version}`;
-      }
-    }
-
-    return response;
-  }
-
-  static populatePackageIdSearchProperties(this: void, response: SearchActionResponse) {
-    for (const record of response.records) {
-      if (record.populated.packageId?.params) {
-        const params = record.populated.packageId.params;
-
-        record.populated.packageId.title = `${params.name}@${params.version}`;
-      }
-    }
-
-    return response;
-  }
-
-  static populatePackageIdShowProperties(this: void, response: RecordActionResponse) {
-    if (response.record.populated.packageId?.params) {
-      const params = response.record.populated.packageId.params;
-
-      response.record.populated.packageId.title = `${params.name}@${params.version}`;
-    }
-
-    return response;
-  }
-
   register_middlewares(app: Application) {
     app.use(rootPath, (req, res, next) => {
       if (this.adminRouter) {
@@ -103,6 +63,7 @@ export class UI implements PluginMiddleware {
           resource: Package,
           options: {
             actions: { ...defaultActions },
+            titleProperty: "displayName",
             listProperties: ["id", "name", "version", "createdAt"],
             showProperties: ["id", "name", "version", "createdAt"],
             filterProperties: ["name", "version"],
@@ -112,12 +73,7 @@ export class UI implements PluginMiddleware {
         {
           resource: DownloadStats,
           options: {
-            actions: {
-              ...defaultActions,
-              show: { after: UI.populatePackageIdShowProperties },
-              list: { after: UI.populatePackageIdListProperties },
-              search: { after: UI.populatePackageIdSearchProperties },
-            },
+            actions: { ...defaultActions },
             properties: {
               periodType: {
                 availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
@@ -132,12 +88,7 @@ export class UI implements PluginMiddleware {
         {
           resource: ManifestViewStats,
           options: {
-            actions: {
-              ...defaultActions,
-              show: { after: UI.populatePackageIdShowProperties },
-              list: { after: UI.populatePackageIdListProperties },
-              search: { after: UI.populatePackageIdSearchProperties },
-            },
+            actions: { ...defaultActions },
             properties: {
               periodType: {
                 availableValues: PERIOD_TYPES.map((type) => ({ value: type, label: type })),
