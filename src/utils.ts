@@ -15,6 +15,17 @@ extend(weekOfYear);
 extend(isoWeek);
 
 /**
+ * Add a scope to the package name.
+ *
+ * @param scope {string} - The scope to add.
+ * @param packageName {string} - The package name.
+ * @returns {string} The scoped package name.
+ */
+export function addScope(scope: string, packageName: string): string {
+  return `@${scope}/${packageName}`;
+}
+
+/**
  * Get the period value for the given period type.
  *
  * @param periodType {PeriodType} - The period type.

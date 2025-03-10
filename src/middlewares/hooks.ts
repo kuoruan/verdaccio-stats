@@ -1,14 +1,19 @@
 import type { Application, Handler } from "express";
 
 import { tarballUtils } from "@verdaccio/core";
-import { PACKAGE_API_ENDPOINTS } from "@verdaccio/middleware";
+import {
+  ROUTE_MANIFEST_VIEW,
+  ROUTE_SCOPED_MANIFEST_VIEW,
+  ROUTE_SCOPED_TARBALL_DOWNLOAD,
+  ROUTE_TARBALL_DOWNLOAD,
+} from "src/constants";
 
 import type { ConfigHolder } from "../config";
 import type { PluginMiddleware } from "../types";
 
 import logger from "../logger";
 import { Database } from "../storage/db";
-import { isSuccessStatus } from "../utils";
+import { addScope, isSuccessStatus } from "../utils";
 
 export class Hooks implements PluginMiddleware {
   private db: Database | null = null;
@@ -24,7 +29,8 @@ export class Hooks implements PluginMiddleware {
       return next();
     }
 
-    const packageName = req.params.package;
+    const scope = req.params.scope;
+    const packageName = scope ? addScope(scope, req.params.package) : req.params.package;
     const version = req.params.version;
 
     if (packageName === "favicon.ico") {
@@ -60,11 +66,11 @@ export class Hooks implements PluginMiddleware {
 
   register_middlewares(app: Application) {
     if (this.config.countDownloads) {
-      app.get(PACKAGE_API_ENDPOINTS.get_package_tarball, this.tarballDownloadHandler);
+      app.get([ROUTE_SCOPED_TARBALL_DOWNLOAD, ROUTE_TARBALL_DOWNLOAD], this.tarballDownloadHandler);
     }
 
     if (this.config.countManifestViews) {
-      app.get(PACKAGE_API_ENDPOINTS.get_package_by_version, this.packageManifestHandler);
+      app.get([ROUTE_SCOPED_MANIFEST_VIEW, ROUTE_MANIFEST_VIEW], this.packageManifestHandler);
     }
   }
 
@@ -81,8 +87,10 @@ export class Hooks implements PluginMiddleware {
       return next();
     }
 
-    // react
-    const packageName = req.params.package;
+    const scope = req.params.scope;
+
+    // react / @vitejs/plugin-react
+    const packageName = scope ? addScope(scope, req.params.package) : req.params.package;
     // react-18.0.0.tgz
     const filename = req.params.filename;
 
