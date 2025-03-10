@@ -26,6 +26,8 @@ export interface ConfigHolder {
 export type StatsConfig = z.infer<typeof statsConfig>;
 
 export class ParsedPluginConfig implements ConfigHolder {
+  readonly favicon: string = "/-/static/favicon.ico";
+
   get configPath(): string {
     return this.verdaccioConfig.configPath ?? this.verdaccioConfig.self_path;
   }
@@ -36,10 +38,6 @@ export class ParsedPluginConfig implements ConfigHolder {
 
   get countManifestViews(): boolean {
     return this.config["count-manifest-views"] ?? true;
-  }
-
-  get favicon(): string {
-    return this.verdaccioConfig.web?.favicon ?? "/-/static/favicon.ico";
   }
 
   get file(): string {
@@ -55,7 +53,7 @@ export class ParsedPluginConfig implements ConfigHolder {
   }
 
   get title(): string {
-    return this.verdaccioConfig.web?.title ?? "Verdaccio Stats";
+    return this.verdaccioConfig.web?.title ? `${this.verdaccioConfig.web.title} - Stats` : "Verdaccio Stats";
   }
 
   constructor(
