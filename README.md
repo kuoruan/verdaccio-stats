@@ -29,7 +29,6 @@ npm install --global-style \
 mv ./install-here/node_modules/verdaccio-stats/ /path/to/verdaccio/plugins/
 ```
 
-
 ## Configuration
 
 Add the plugin to your Verdaccio config file:
@@ -38,20 +37,36 @@ Add the plugin to your Verdaccio config file:
 middlewares:
   stats:
     enabled: true
-    file: ./stats.db        # Optional, SQLite database
-    iso-week: false         # Optional, whether to use ISO week format
-    count-downloads: true   # Optional, whether to count downloads
-    count-manifest-views: true  # Optional, whether to count manifest views
+    dialect: sqlite # Optional: sqlite, mysql, postgres, mariadb, mssql (default: sqlite)
+    database: stats.db # For SQLite: path to database file
+    # For other databases, use object configuration:
+    # database:
+    #   name: verdaccio_stats
+    #   username: user         # Or use VERDACCIO_STATS_USERNAME env var
+    #   password: pass         # Or use VERDACCIO_STATS_PASSWORD env var
+    #   host: localhost
+    #   port: 5432
+    iso-week: false # Optional, whether to use ISO week format
+    count-downloads: true # Optional, whether to count downloads
+    count-manifest-views: true # Optional, whether to count manifest views
 ```
 
 ### Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `file` | string | `stats.db` | Path to the file where stats are stored |
-| `iso-week` | boolean | `false` | Whether to use ISO week format |
-| `count-downloads` | boolean | `true` | Whether to count downloads |
-| `count-manifest-views` | boolean | `true` | Whether to count manifest views |
+| Option                 | Type             | Default           | Description                                                       |
+| ---------------------- | ---------------- | ----------------- | ----------------------------------------------------------------- |
+| `enabled`              | boolean          | `true`            | Whether the plugin is enabled                                     |
+| `dialect`              | string           | `sqlite`          | Database type (`sqlite`, `mysql`, `postgres`, `mariadb`, `mssql`) |
+| `database`             | string or object | `stats.db`      | Database configuration                                            |
+| `database.name`        | string           | `verdaccio_stats` | Database name                                                     |
+| `database.username`    | string           |                   | Database username                                                 |
+| `database.password`    | string           |                   | Database password                                                 |
+| `database.host`        | string           | `localhost`       | Database host                                                     |
+| `database.port`        | number           | `3306`            | Database port                                                     |
+| `file`                 | string           | `stats.db`        | Path to the file where stats are stored                           |
+| `iso-week`             | boolean          | `false`           | Whether to use ISO week format                                    |
+| `count-downloads`      | boolean          | `true`            | Whether to count downloads                                        |
+| `count-manifest-views` | boolean          | `true`            | Whether to count manifest views                                   |
 
 ## Usage
 
@@ -65,4 +80,4 @@ http://your-registry.com/-/verdaccio/stats/ui
 
 ## License
 
-See the [`LICENSE`](LICENSE ) file for details.
+See the [`LICENSE`](LICENSE) file for details.
