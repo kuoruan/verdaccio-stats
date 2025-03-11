@@ -6,6 +6,7 @@ import type { ConfigHolder } from "../config";
 
 import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "../constants";
 import { getUmzugLogger } from "../debugger";
+import logger from "../logger";
 import { migrations } from "../migrations";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
 import { getPeriodValue } from "../utils";
@@ -16,9 +17,12 @@ export class Database {
   private umzug: Umzug<Sequelize>;
 
   constructor(config: ConfigHolder) {
+    const sequelizeOptions = config.sequelizeOptions;
+
+    logger.debug({ dialect: sequelizeOptions.dialect }, "Creating @{dialect} database connection");
+
     const sequelize = new Sequelize({
-      dialect: "sqlite",
-      storage: config.file,
+      ...sequelizeOptions,
       logging: (sql) => debug(sql),
       pool: {
         max: 5,
@@ -49,9 +53,11 @@ export class Database {
     const t = await this.sequelize.transaction();
 
     try {
-      await this.addTotalDownloadCount(t);
-      await this.addPackageDownloadCount(packageName, UNIVERSE_PACKAGE_VERSION, t);
-      await this.addPackageDownloadCount(packageName, version, t);
+      await Promise.all([
+        this.addTotalDownloadCount(t),
+        this.addPackageDownloadCount(packageName, UNIVERSE_PACKAGE_VERSION, t),
+        this.addPackageDownloadCount(packageName, version, t),
+      ]);
 
       await t.commit();
     } catch (err) {
@@ -64,17 +70,23 @@ export class Database {
     const t = await this.sequelize.transaction();
 
     try {
-      await this.addTotalManifestViewCount(t);
-      await this.addPackageManifestViewCount(packageName, UNIVERSE_PACKAGE_VERSION, t);
-      if (version) {
-        await this.addPackageManifestViewCount(packageName, version, t);
-      }
+      await Promise.all(
+        [
+          this.addTotalManifestViewCount(t),
+          this.addPackageManifestViewCount(packageName, UNIVERSE_PACKAGE_VERSION, t),
+          version && this.addPackageManifestViewCount(packageName, version, t),
+        ].filter(Boolean),
+      );
 
       await t.commit();
     } catch (err) {
       await t.rollback();
       throw err;
     }
+  }
+
+  public authenticate() {
+    return this.sequelize.authenticate();
   }
 
   public close() {
@@ -90,33 +102,45 @@ export class Database {
   }
 
   private async addDownloadForAllPeriod(pkg: Package, transaction: Transaction) {
-    for (const periodType of PERIOD_TYPES) {
-      const [downloadStats] = await DownloadStats.findOrCreate({
-        where: {
-          packageId: pkg.id,
-          periodType,
-          periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
-        },
-        transaction,
-      });
+    const downloadStatsList = await Promise.all(
+      PERIOD_TYPES.map(async (periodType) => {
+        const [downloadStats] = await DownloadStats.findOrCreate({
+          where: {
+            packageId: pkg.id,
+            periodType,
+            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+          },
+          transaction,
+        });
 
-      await downloadStats.increment("count", { by: 1, transaction });
-    }
+        return downloadStats;
+      }),
+    );
+
+    return Promise.all(
+      downloadStatsList.map((downloadStats) => downloadStats.increment("count", { by: 1, transaction })),
+    );
   }
 
   private async addManifestViewForAllPeriod(pkg: Package, transaction: Transaction) {
-    for (const periodType of PERIOD_TYPES) {
-      const [manifestViewStats] = await ManifestViewStats.findOrCreate({
-        where: {
-          packageId: pkg.id,
-          periodType,
-          periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
-        },
-        transaction,
-      });
+    const manifestViewStatsList = await Promise.all(
+      PERIOD_TYPES.map(async (periodType) => {
+        const [manifestViewStats] = await ManifestViewStats.findOrCreate({
+          where: {
+            packageId: pkg.id,
+            periodType,
+            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+          },
+          transaction,
+        });
 
-      await manifestViewStats.increment("count", { by: 1, transaction });
-    }
+        return manifestViewStats;
+      }),
+    );
+
+    return Promise.all(
+      manifestViewStatsList.map((manifestViewStats) => manifestViewStats.increment("count", { by: 1, transaction })),
+    );
   }
 
   private async addPackageDownloadCount(packageName: string, version: string, transaction: Transaction) {
@@ -189,7 +213,7 @@ export class Database {
         count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
         packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.STRING(20) },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES) },
         periodValue: { allowNull: false, type: DataTypes.STRING(20) },
       },
       {
@@ -203,7 +227,7 @@ export class Database {
         count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
         packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.STRING(20) },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES) },
         periodValue: { allowNull: false, type: DataTypes.STRING(20) },
       },
       { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
