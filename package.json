@@ -1,6 +1,6 @@
 {
   "name": "verdaccio-stats",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The stats plugin for Verdaccio",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
