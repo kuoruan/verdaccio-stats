@@ -55,20 +55,36 @@ export class UI implements PluginMiddleware {
     AdminJS.registerAdapter(AdminJSSequelize);
 
     const admin = new AdminJS({
-      resources: [
-        {
-          resource: Package,
-          options: {
-            actions: { ...defaultActions },
-            titleProperty: "displayName",
-            listProperties: ["id", "name", "version", "createdAt"],
-            showProperties: ["id", "name", "version", "createdAt"],
-            filterProperties: ["name", "version"],
-            sort: { sortBy: "createdAt", direction: "desc" },
+      resources: (
+        [
+          {
+            resource: Package,
+            options: {
+              actions: {
+                ...defaultActions,
+                search: {
+                  before: (request) => {
+                    if (request.params.action !== "search") {
+                      return request;
+                    }
+
+                    request.query = {
+                      ...request.query,
+                      searchProperty: "name",
+                    };
+
+                    return request;
+                  },
+                },
+              },
+              titleProperty: "displayName",
+              listProperties: ["id", "name", "version", "createdAt"],
+              showProperties: ["id", "name", "version", "createdAt"],
+              filterProperties: ["name", "version"],
+              sort: { sortBy: "createdAt", direction: "desc" },
+            },
           },
-        },
-        this.config.countDownloads &&
-          ({
+          this.config.countDownloads && {
             resource: DownloadStats,
             options: {
               actions: { ...defaultActions },
@@ -82,9 +98,8 @@ export class UI implements PluginMiddleware {
               filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
               sort: { sortBy: "updatedAt", direction: "desc" },
             },
-          } satisfies ResourceWithOptions),
-        this.config.countManifestViews &&
-          ({
+          },
+          this.config.countManifestViews && {
             resource: ManifestViewStats,
             options: {
               actions: { ...defaultActions },
@@ -98,8 +113,9 @@ export class UI implements PluginMiddleware {
               filterProperties: ["packageId", "periodType", "periodValue", "createdAt", "updatedAt"],
               sort: { sortBy: "updatedAt", direction: "desc" },
             },
-          } satisfies ResourceWithOptions),
-      ].filter(Boolean) as ResourceWithOptions[],
+          },
+        ] satisfies (false | ResourceWithOptions)[]
+      ).filter(Boolean),
       rootPath: rootPath,
       branding: {
         companyName: this.config.title,
