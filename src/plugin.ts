@@ -5,6 +5,7 @@ import type { PluginMiddleware } from "./types";
 
 import { ParsedPluginConfig, type StatsConfig } from "./config";
 import { plugin } from "./constants";
+import { debug } from "./debugger";
 import logger, { setLogger } from "./logger";
 import { Hooks } from "./middlewares/hooks";
 import { Stats } from "./middlewares/stats";
@@ -27,9 +28,26 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
 
     this.parsedConfig = new ParsedPluginConfig(config, options.config);
 
-    this.db = new Database(this.parsedConfig);
+    const db = new Database(this.parsedConfig);
 
-    void this.initDB();
+    void this.initDB(db);
+
+    // close db on process termination
+    for (const signal of ["SIGINT", "SIGQUIT", "SIGTERM", "SIGHUP"]) {
+      process.once(signal, async () => {
+        try {
+          debug("Received signal %s, closing db...", signal);
+
+          await db.close();
+
+          debug("DB closed, good bye!");
+        } catch (e: any) {
+          debug("Error closing db: %s", e.message);
+        }
+      });
+    }
+
+    this.db = db;
   }
 
   getVersion(): number {
@@ -46,10 +64,10 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
     }
   }
 
-  private async initDB(): Promise<void> {
+  private async initDB(db: Database): Promise<void> {
     try {
-      await this.db.authenticate();
-      await this.db.migrate();
+      await db.authenticate();
+      await db.migrate();
     } catch (err) {
       logger.error({ err }, "Failed to initialize database; @{err}");
       process.exit(1);
