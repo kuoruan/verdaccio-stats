@@ -2,6 +2,11 @@
 
 This plugin adds detailed statistics functionality to your Verdaccio private npm registry.
 
+[![npm](https://img.shields.io/npm/v/verdaccio-stats.svg)](https://www.npmjs.com/package/verdaccio-stats)
+[![npm](https://img.shields.io/npm/dw/verdaccio-stats.svg)](https://www.npmjs.com/package/verdaccio-stats)
+[![npm](https://img.shields.io/npm/dt/verdaccio-stats.svg)](https://www.npmjs.com/package/verdaccio-stats)
+[![npm](https://img.shields.io/npm/l/verdaccio-stats.svg)](https://www.npmjs.com/package/verdaccio-stats)
+
 ## Features
 
 - Track package download statistics
