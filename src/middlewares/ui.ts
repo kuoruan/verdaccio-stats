@@ -67,12 +67,7 @@ export class UI implements PluginMiddleware {
                     if (request.params.action !== "search") {
                       return request;
                     }
-
-                    request.query = {
-                      ...request.query,
-                      searchProperty: "name",
-                    };
-
+                    request.query = { ...request.query, searchProperty: "name" };
                     return request;
                   },
                 },

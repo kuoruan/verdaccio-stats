@@ -197,9 +197,9 @@ export class Database {
         name: { allowNull: false, type: DataTypes.STRING(100) },
         version: { allowNull: false, type: DataTypes.STRING(50) },
         displayName: {
-          type: DataTypes.VIRTUAL,
+          type: DataTypes.VIRTUAL(DataTypes.STRING, ["name", "version"]),
           get() {
-            return `${this.name}@${this.version}`;
+            return `${this.getDataValue("name")}@${this.getDataValue("version")}`;
           },
           set() {
             throw new Error("Virtual property, cannot be set");
@@ -213,7 +213,7 @@ export class Database {
         count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
         packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES) },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
         periodValue: { allowNull: false, type: DataTypes.STRING(20) },
       },
       {
@@ -227,7 +227,7 @@ export class Database {
         count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
         packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES) },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
         periodValue: { allowNull: false, type: DataTypes.STRING(20) },
       },
       { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
