@@ -1,4 +1,4 @@
-import { CreationAttributes, DataTypes, Op, Sequelize, type Transaction } from "sequelize";
+import { type CreationAttributes, DataTypes, Op, Sequelize, type Transaction } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
 import type { ConfigHolder } from "../config";
@@ -47,6 +47,71 @@ export class Database {
     this.umzug = umzug;
 
     this.init();
+  }
+
+  private init() {
+    Package.init(
+      {
+        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+        name: { allowNull: false, type: DataTypes.STRING(100) },
+        version: { allowNull: false, type: DataTypes.STRING(50) },
+        displayName: {
+          type: DataTypes.VIRTUAL(DataTypes.STRING, ["name", "version"]),
+          get() {
+            return `${this.getDataValue("name")}@${this.getDataValue("version")}`;
+          },
+          set() {
+            throw new Error("Virtual property, cannot be set");
+          },
+        },
+      },
+      { sequelize: this.sequelize, tableName: "packages", underscored: true },
+    );
+    DownloadStats.init(
+      {
+        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
+        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
+      },
+      {
+        sequelize: this.sequelize,
+        tableName: "download_stats",
+        underscored: true,
+      },
+    );
+    ManifestViewStats.init(
+      {
+        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
+        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
+        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
+        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
+      },
+      { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
+    );
+
+    Package.hasMany(DownloadStats, {
+      sourceKey: "id",
+      foreignKey: "packageId",
+      as: "downloadStats",
+    });
+    Package.hasMany(ManifestViewStats, {
+      sourceKey: "id",
+      foreignKey: "packageId",
+      as: "manifestViewStats",
+    });
+    DownloadStats.belongsTo(Package, {
+      targetKey: "id",
+      foreignKey: "packageId",
+      as: "package",
+    });
+    ManifestViewStats.belongsTo(Package, {
+      targetKey: "id",
+      foreignKey: "packageId",
+      as: "package",
+    });
   }
 
   public async addDownloadCount(packageName: string, version: string) {
@@ -222,70 +287,5 @@ export class Database {
     this.universePackage = universePkg;
 
     return universePkg;
-  }
-
-  private init() {
-    Package.init(
-      {
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        name: { allowNull: false, type: DataTypes.STRING(100) },
-        version: { allowNull: false, type: DataTypes.STRING(50) },
-        displayName: {
-          type: DataTypes.VIRTUAL(DataTypes.STRING, ["name", "version"]),
-          get() {
-            return `${this.getDataValue("name")}@${this.getDataValue("version")}`;
-          },
-          set() {
-            throw new Error("Virtual property, cannot be set");
-          },
-        },
-      },
-      { sequelize: this.sequelize, tableName: "packages", underscored: true },
-    );
-    DownloadStats.init(
-      {
-        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
-        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
-      },
-      {
-        sequelize: this.sequelize,
-        tableName: "download_stats",
-        underscored: true,
-      },
-    );
-    ManifestViewStats.init(
-      {
-        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
-        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
-      },
-      { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
-    );
-
-    Package.hasMany(DownloadStats, {
-      sourceKey: "id",
-      foreignKey: "packageId",
-      as: "downloadStats",
-    });
-    Package.hasMany(ManifestViewStats, {
-      sourceKey: "id",
-      foreignKey: "packageId",
-      as: "manifestViewStats",
-    });
-    DownloadStats.belongsTo(Package, {
-      targetKey: "id",
-      foreignKey: "packageId",
-      as: "package",
-    });
-    ManifestViewStats.belongsTo(Package, {
-      targetKey: "id",
-      foreignKey: "packageId",
-      as: "package",
-    });
   }
 }

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import dayjs, { type Dayjs, extend } from "dayjs";
+import dayjs, { type ConfigType, extend } from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import isoWeek from "dayjs/plugin/isoWeek";
 import weekOfYear from "dayjs/plugin/weekOfYear";
@@ -25,10 +25,6 @@ export function addScope(scope: string, packageName: string): string {
   return `@${scope}/${packageName}`;
 }
 
-export function getCurrentPeriodValue(periodType: PeriodType, isoWeek?: boolean): PeriodValue {
-  return getPeriodValue(periodType, undefined, isoWeek);
-}
-
 /**
  * Get the period value for the given period type.
  *
@@ -37,7 +33,7 @@ export function getCurrentPeriodValue(periodType: PeriodType, isoWeek?: boolean)
  * @param isoWeek {boolean} - Whether to use ISO week format.
  * @returns {PeriodValue} The period value.
  */
-export function getPeriodValue(periodType: PeriodType, date?: Dayjs, isoWeek?: boolean): PeriodValue {
+export function getPeriodValue(periodType: PeriodType, date?: ConfigType, isoWeek?: boolean): PeriodValue {
   switch (periodType) {
     case "daily": {
       return dayjs(date).format("YYYY-MM-DD");
@@ -58,6 +54,17 @@ export function getPeriodValue(periodType: PeriodType, date?: Dayjs, isoWeek?: b
       throw new Error(`Unknown period type: ${String(periodType)}`);
     }
   }
+}
+
+/**
+ * Get the period value for the current date.
+ *
+ * @param periodType {PeriodType} - The period type.
+ * @param isoWeek {boolean} - Whether to use ISO week format.
+ * @returns {PeriodValue} The period value for the current date.
+ */
+export function getCurrentPeriodValue(periodType: PeriodType, isoWeek?: boolean): PeriodValue {
+  return getPeriodValue(periodType, new Date(), isoWeek);
 }
 
 /**

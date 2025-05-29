@@ -102,7 +102,24 @@ export interface ConfigHolder {
 export type StatsConfig = z.infer<typeof statsConfig>;
 
 export class ParsedPluginConfig implements ConfigHolder {
+  private config: StatsConfig;
+
   readonly favicon: string = "/-/static/favicon.ico";
+
+  constructor(
+    config: StatsConfig,
+    private readonly verdaccioConfig: Config,
+  ) {
+    try {
+      this.config = statsConfig.parse(config);
+    } catch (err: any) {
+      const fieldErrors = (err as z.ZodError).flatten().fieldErrors;
+
+      logger.error({ errors: fieldErrors }, "Invalid config for verdaccio stats plugin, @{errors}");
+
+      process.exit(1);
+    }
+  }
 
   get configPath(): string {
     return this.verdaccioConfig.configPath ?? this.verdaccioConfig.self_path;
@@ -151,22 +168,5 @@ export class ParsedPluginConfig implements ConfigHolder {
 
   get title(): string {
     return this.verdaccioConfig.web?.title ? `${this.verdaccioConfig.web.title} - Stats` : "Verdaccio Stats";
-  }
-
-  private config: StatsConfig;
-
-  constructor(
-    config: StatsConfig,
-    private readonly verdaccioConfig: Config,
-  ) {
-    try {
-      this.config = statsConfig.parse(config);
-    } catch (err: any) {
-      const fieldErrors = (err as z.ZodError).flatten().fieldErrors;
-
-      logger.error({ errors: fieldErrors }, "Invalid config for verdaccio stats plugin, @{errors}");
-
-      process.exit(1);
-    }
   }
 }
