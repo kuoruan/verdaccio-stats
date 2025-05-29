@@ -25,6 +25,10 @@ export function addScope(scope: string, packageName: string): string {
   return `@${scope}/${packageName}`;
 }
 
+export function getCurrentPeriodValue(periodType: PeriodType, isoWeek?: boolean): PeriodValue {
+  return getPeriodValue(periodType, undefined, isoWeek);
+}
+
 /**
  * Get the period value for the given period type.
  *

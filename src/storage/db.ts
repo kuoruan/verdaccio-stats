@@ -9,7 +9,7 @@ import { getUmzugLogger } from "../debugger";
 import logger from "../logger";
 import { migrations } from "../migrations";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
-import { getPeriodValue } from "../utils";
+import { getCurrentPeriodValue } from "../utils";
 
 export class Database {
   private config: ConfigHolder;
@@ -108,7 +108,7 @@ export class Database {
           where: {
             packageId: pkg.id,
             periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+            periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
           },
           transaction,
         });
@@ -129,7 +129,7 @@ export class Database {
           where: {
             packageId: pkg.id,
             periodType,
-            periodValue: getPeriodValue(periodType, undefined, this.config.isoWeek),
+            periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
           },
           transaction,
         });
