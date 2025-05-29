@@ -1,8 +1,6 @@
 import type { pluginUtils } from "@verdaccio/core";
 import type { Express } from "express";
 
-import type { PluginMiddleware } from "./types";
-
 import { ParsedPluginConfig, type StatsConfig } from "./config";
 import { plugin } from "./constants";
 import { debug } from "./debugger";
@@ -11,6 +9,7 @@ import { Hooks } from "./middlewares/hooks";
 import { Stats } from "./middlewares/stats";
 import { UI } from "./middlewares/ui";
 import { Database } from "./storage/db";
+import type { PluginMiddleware } from "./types";
 
 export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never, never> {
   public get version(): number {

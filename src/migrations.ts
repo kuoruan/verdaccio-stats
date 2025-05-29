@@ -1,6 +1,5 @@
-import type { RunnableMigration } from "umzug";
-
 import { DataTypes, type Sequelize } from "sequelize";
+import type { RunnableMigration } from "umzug";
 
 import { UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "./constants";
 

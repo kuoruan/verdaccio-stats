@@ -2,10 +2,9 @@ import type { ResourceOptions, ResourceWithOptions } from "adminjs";
 import type { Application, Router } from "express";
 
 import type { ConfigHolder } from "../config";
-import type { PluginMiddleware } from "../types";
-
 import { PERIOD_TYPES } from "../constants";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
+import type { PluginMiddleware } from "../types";
 import { wrapPath } from "../utils";
 
 const rootPath = wrapPath("/ui");

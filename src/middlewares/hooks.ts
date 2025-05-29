@@ -1,6 +1,5 @@
-import type { Application, Handler } from "express";
-
 import { tarballUtils } from "@verdaccio/core";
+import type { Application, Handler } from "express";
 import {
   ROUTE_MANIFEST_VIEW,
   ROUTE_SCOPED_MANIFEST_VIEW,
@@ -9,10 +8,9 @@ import {
 } from "src/constants";
 
 import type { ConfigHolder } from "../config";
-import type { PluginMiddleware } from "../types";
-
 import logger from "../logger";
 import { Database } from "../storage/db";
+import type { PluginMiddleware } from "../types";
 import { addScope, isSuccessStatus } from "../utils";
 
 export class Hooks implements PluginMiddleware {

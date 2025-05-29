@@ -1,5 +1,6 @@
-import dayjs from "dayjs";
 import path from "node:path";
+
+import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
 
 import { PERIOD_VALUE_TOTAL } from "../src/constants";

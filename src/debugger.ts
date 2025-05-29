@@ -1,6 +1,5 @@
-import type { UmzugOptions } from "umzug";
-
 import buildDebug from "debug";
+import type { UmzugOptions } from "umzug";
 
 import { pluginKey } from "./constants";
 

@@ -1,9 +1,8 @@
 import type { Application, Handler } from "express";
 
 import type { ConfigHolder } from "../config";
-import type { PluginMiddleware } from "../types";
-
 import { Database } from "../storage/db";
+import type { PluginMiddleware } from "../types";
 import { wrapPath } from "../utils";
 
 /**

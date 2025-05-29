@@ -1,7 +1,8 @@
+import process from "node:process";
+
 import json from "@rollup/plugin-json";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
-import process from "node:process";
 import { defineConfig } from "rollup";
 import { nodeExternals } from "rollup-plugin-node-externals";
 
