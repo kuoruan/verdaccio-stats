@@ -58,26 +58,26 @@ export class Package extends Model<
   declare manifestViewStats?: NonAttribute<ManifestViewStats[]>;
 
   declare getDownloadStats: HasManyGetAssociationsMixin<DownloadStats>;
-  declare addDownloadStats: HasManyAddAssociationMixin<DownloadStats, number>;
-  declare addDownloadStatsByList: HasManyAddAssociationsMixin<DownloadStats, number>;
-  declare setDownloadStats: HasManySetAssociationsMixin<DownloadStats, number>;
-  declare removeDownloadStats: HasManyRemoveAssociationMixin<DownloadStats, number>;
-  declare removeDownloadStatsByList: HasManyRemoveAssociationsMixin<DownloadStats, number>;
-  declare hasDownloadStats: HasManyHasAssociationMixin<DownloadStats, number>;
-  declare hasDownloadStatsByList: HasManyHasAssociationsMixin<DownloadStats, number>;
   declare countDownloadStats: HasManyCountAssociationsMixin;
-  declare createDownloadStats: HasManyCreateAssociationMixin<DownloadStats, "packageId">;
+  declare hasDownloadStat: HasManyHasAssociationMixin<DownloadStats, number>;
+  declare hasDownloadStats: HasManyHasAssociationsMixin<DownloadStats, number>;
+  declare setDownloadStats: HasManySetAssociationsMixin<DownloadStats, number>;
+  declare addDownloadStat: HasManyAddAssociationMixin<DownloadStats, number>;
+  declare addDownloadStats: HasManyAddAssociationsMixin<DownloadStats, number>;
+  declare removeDownloadStat: HasManyRemoveAssociationMixin<DownloadStats, number>;
+  declare removeDownloadStats: HasManyRemoveAssociationsMixin<DownloadStats, number>;
+  declare createDownloadStat: HasManyCreateAssociationMixin<DownloadStats, "packageId">;
 
-  declare addManifestViewStats: HasManyAddAssociationMixin<ManifestViewStats, number>;
-  declare addManifestViewStatsByList: HasManyAddAssociationsMixin<ManifestViewStats, number>;
   declare getManifestViewStats: HasManyGetAssociationsMixin<ManifestViewStats>;
-  declare setManifestViewStats: HasManySetAssociationsMixin<ManifestViewStats, number>;
-  declare removeManifestViewStats: HasManyRemoveAssociationMixin<ManifestViewStats, number>;
-  declare removeManifestViewStatsByList: HasManyRemoveAssociationsMixin<ManifestViewStats, number>;
-  declare hasManifestViewStats: HasManyHasAssociationMixin<ManifestViewStats, number>;
-  declare hasManifestViewStatsByList: HasManyHasAssociationsMixin<ManifestViewStats, number>;
   declare countManifestViewStats: HasManyCountAssociationsMixin;
-  declare createManifestViewStats: HasManyCreateAssociationMixin<ManifestViewStats, "packageId">;
+  declare hasManifestViewStat: HasManyHasAssociationMixin<ManifestViewStats, number>;
+  declare hasManifestViewStats: HasManyHasAssociationsMixin<ManifestViewStats, number>;
+  declare setManifestViewStats: HasManySetAssociationsMixin<ManifestViewStats, number>;
+  declare addManifestViewStat: HasManyAddAssociationMixin<ManifestViewStats, number>;
+  declare addManifestViewStats: HasManyAddAssociationsMixin<ManifestViewStats, number>;
+  declare removeManifestViewStat: HasManyRemoveAssociationMixin<ManifestViewStats, number>;
+  declare removeManifestViewStats: HasManyRemoveAssociationsMixin<ManifestViewStats, number>;
+  declare createManifestViewStat: HasManyCreateAssociationMixin<ManifestViewStats, "packageId">;
 
   declare static associations: {
     downloadStats: Association<Package, DownloadStats>;
