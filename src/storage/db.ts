@@ -16,6 +16,8 @@ export class Database {
   private sequelize: Sequelize;
   private umzug: Umzug<Sequelize>;
 
+  private universePackage: null | Package = null;
+
   constructor(config: ConfigHolder) {
     const sequelizeOptions = config.sequelizeOptions;
 
@@ -178,6 +180,10 @@ export class Database {
   }
 
   private async ensureUniversePackageExists(transaction: Transaction): Promise<Package> {
+    if (this.universePackage) {
+      return this.universePackage;
+    }
+
     const universePkg = await Package.findOne({
       where: { name: UNIVERSE_PACKAGE_NAME, version: UNIVERSE_PACKAGE_VERSION },
       transaction,
@@ -186,6 +192,8 @@ export class Database {
     if (!universePkg) {
       throw new Error("Universe package not found");
     }
+
+    this.universePackage = universePkg;
 
     return universePkg;
   }
