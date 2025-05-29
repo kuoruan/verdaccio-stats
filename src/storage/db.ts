@@ -27,8 +27,8 @@ export class Database {
       ...sequelizeOptions,
       logging: (sql) => debug(sql),
       pool: {
-        max: 5,
-        min: 0,
+        max: 10,
+        min: 2,
         acquire: 30_000,
         idle: 10_000,
       },
