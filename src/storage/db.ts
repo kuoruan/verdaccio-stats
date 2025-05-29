@@ -1,5 +1,5 @@
 import debug from "debug";
-import { DataTypes, Sequelize, type Transaction } from "sequelize";
+import { DataTypes, Op, Sequelize, type Transaction } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
 import type { ConfigHolder } from "../config";
@@ -104,45 +104,73 @@ export class Database {
   }
 
   private async addDownloadForAllPeriod(pkg: Package, transaction: Transaction) {
-    const downloadStatsList = await Promise.all(
-      PERIOD_TYPES.map(async (periodType) => {
-        const [downloadStats] = await DownloadStats.findOrCreate({
-          where: {
-            packageId: pkg.id,
-            periodType,
-            periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
-          },
-          transaction,
-        });
+    const periodValues = PERIOD_TYPES.map((periodType) => ({
+      periodType,
+      periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
+    }));
 
-        return downloadStats;
-      }),
-    );
+    const existingStats = await DownloadStats.findAll({
+      where: {
+        packageId: pkg.id,
+        [Op.or]: periodValues,
+      },
+      transaction,
+    });
 
-    return Promise.all(
-      downloadStatsList.map((downloadStats) => downloadStats.increment("count", { by: 1, transaction })),
-    );
+    const statsToCreate: DownloadStats[] = [];
+    const statsToUpdate: DownloadStats[] = [];
+
+    for (const { periodType, periodValue } of periodValues) {
+      const existingStat = existingStats.find(
+        (stat) => stat.periodType === periodType && stat.periodValue === periodValue,
+      );
+
+      if (existingStat) {
+        statsToUpdate.push(existingStat);
+      } else {
+        statsToCreate.push(DownloadStats.build({ packageId: pkg.id, periodType, periodValue, count: 1 }));
+      }
+    }
+
+    return Promise.all([
+      ...(statsToCreate.length > 0 ? [DownloadStats.bulkCreate(statsToCreate, { transaction })] : []),
+      ...statsToUpdate.map((downloadStats) => downloadStats.increment("count", { by: 1, transaction })),
+    ]);
   }
 
   private async addManifestViewForAllPeriod(pkg: Package, transaction: Transaction) {
-    const manifestViewStatsList = await Promise.all(
-      PERIOD_TYPES.map(async (periodType) => {
-        const [manifestViewStats] = await ManifestViewStats.findOrCreate({
-          where: {
-            packageId: pkg.id,
-            periodType,
-            periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
-          },
-          transaction,
-        });
+    const periodValues = PERIOD_TYPES.map((periodType) => ({
+      periodType,
+      periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
+    }));
 
-        return manifestViewStats;
-      }),
-    );
+    const existingStats = await ManifestViewStats.findAll({
+      where: {
+        packageId: pkg.id,
+        [Op.or]: periodValues,
+      },
+      transaction,
+    });
 
-    return Promise.all(
-      manifestViewStatsList.map((manifestViewStats) => manifestViewStats.increment("count", { by: 1, transaction })),
-    );
+    const statsToCreate: DownloadStats[] = [];
+    const statsToUpdate: DownloadStats[] = [];
+
+    for (const { periodType, periodValue } of periodValues) {
+      const existingStat = existingStats.find(
+        (stat) => stat.periodType === periodType && stat.periodValue === periodValue,
+      );
+
+      if (existingStat) {
+        statsToUpdate.push(existingStat);
+      } else {
+        statsToCreate.push(ManifestViewStats.build({ packageId: pkg.id, periodType, periodValue, count: 1 }));
+      }
+    }
+
+    return Promise.all([
+      ...(statsToCreate.length > 0 ? [ManifestViewStats.bulkCreate(statsToCreate, { transaction })] : []),
+      ...statsToUpdate.map((manifestViewStats) => manifestViewStats.increment("count", { by: 1, transaction })),
+    ]);
   }
 
   private async addPackageDownloadCount(packageName: string, version: string, transaction: Transaction) {
