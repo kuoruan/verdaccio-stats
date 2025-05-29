@@ -38,22 +38,22 @@
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-import-resolver-next": "^0.6.0",
-    "eslint-plugin-import-x": "^4.12.2",
+    "eslint-plugin-import-x": "^4.13.3",
     "eslint-plugin-perfectionist": "^4.13.0",
     "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-unicorn": "^59.0.1",
     "express": "^4.21.2",
-    "globals": "^16.1.0",
+    "globals": "^16.2.0",
     "pg": "^8.16.0",
     "pg-hstore": "^2.3.4",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.41.0",
+    "rollup": "^4.41.1",
     "rollup-plugin-node-externals": "^8.0.0",
     "sqlite3": "^5.1.7",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1",
+    "typescript-eslint": "^8.33.0",
     "verdaccio": "^6.1.2",
     "verdaccio-stats": "file:",
     "vitest": "^3.1.4"
@@ -73,7 +73,7 @@
     "debug": "^4.4.1",
     "sequelize": "^6.37.7",
     "umzug": "^3.8.2",
-    "zod": "^3.25.12"
+    "zod": "^3.25.34"
   },
   "pnpm": {
     "peerDependencyRules": {
