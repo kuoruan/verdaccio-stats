@@ -6,7 +6,7 @@ import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from ".
 import { debug, getUmzugLogger } from "../debugger";
 import logger from "../logger";
 import { migrations } from "../migrations";
-import { DownloadStats, ManifestViewStats, Package } from "../models";
+import { DownloadStats, ManifestViewStats, Package, type StatsModel } from "../models";
 import { getCurrentPeriodValue } from "../utils";
 
 export class Database {
@@ -166,13 +166,17 @@ export class Database {
     return this.umzug.down();
   }
 
-  private async addDownloadForAllPeriod(pkg: Package, transaction: Transaction) {
+  private async addStatsForAllPeriod<T extends typeof StatsModel<StatsModel>>(
+    pkg: Package,
+    statsModel: T,
+    transaction: Transaction,
+  ): Promise<void> {
     const periodValues = PERIOD_TYPES.map((periodType) => ({
       periodType,
       periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
     }));
 
-    const existingStats = await DownloadStats.findAll({
+    const existingStats = await statsModel.findAll({
       where: {
         packageId: pkg.id,
         [Op.or]: periodValues,
@@ -180,8 +184,8 @@ export class Database {
       transaction,
     });
 
-    const statsToCreate: CreationAttributes<DownloadStats>[] = [];
-    const statsToUpdate: DownloadStats[] = [];
+    const statsToCreate: CreationAttributes<InstanceType<T>>[] = [];
+    const statsIdsToUpdate: number[] = [];
 
     for (const { periodType, periodValue } of periodValues) {
       const existingStat = existingStats.find(
@@ -189,75 +193,42 @@ export class Database {
       );
 
       if (existingStat) {
-        statsToUpdate.push(existingStat);
+        statsIdsToUpdate.push(existingStat.id);
       } else {
-        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 });
+        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 } as any);
       }
     }
 
-    return Promise.all([
-      ...(statsToCreate.length > 0 ? [DownloadStats.bulkCreate(statsToCreate, { transaction })] : []),
-      ...statsToUpdate.map((downloadStats) => downloadStats.increment("count", { by: 1, transaction })),
-    ]);
-  }
-
-  private async addManifestViewForAllPeriod(pkg: Package, transaction: Transaction) {
-    const periodValues = PERIOD_TYPES.map((periodType) => ({
-      periodType,
-      periodValue: getCurrentPeriodValue(periodType, this.config.isoWeek),
-    }));
-
-    const existingStats = await ManifestViewStats.findAll({
-      where: {
-        packageId: pkg.id,
-        [Op.or]: periodValues,
-      },
-      transaction,
-    });
-
-    const statsToCreate: CreationAttributes<ManifestViewStats>[] = [];
-    const statsToUpdate: ManifestViewStats[] = [];
-
-    for (const { periodType, periodValue } of periodValues) {
-      const existingStat = existingStats.find(
-        (stat) => stat.periodType === periodType && stat.periodValue === periodValue,
-      );
-
-      if (existingStat) {
-        statsToUpdate.push(existingStat);
-      } else {
-        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 });
-      }
-    }
-
-    return Promise.all([
-      ...(statsToCreate.length > 0 ? [ManifestViewStats.bulkCreate(statsToCreate, { transaction })] : []),
-      ...statsToUpdate.map((manifestViewStats) => manifestViewStats.increment("count", { by: 1, transaction })),
+    await Promise.all([
+      ...(statsToCreate.length > 0 ? [statsModel.bulkCreate(statsToCreate, { transaction })] : []),
+      ...(statsIdsToUpdate.length > 0
+        ? [statsModel.increment("count", { by: 1, where: { id: { [Op.in]: statsIdsToUpdate } }, transaction })]
+        : []),
     ]);
   }
 
   private async addPackageDownloadCount(packageName: string, version: string, transaction: Transaction) {
     const pkg = await this.ensurePackageExists(packageName, version, transaction);
 
-    return this.addDownloadForAllPeriod(pkg, transaction);
+    return this.addStatsForAllPeriod(pkg, DownloadStats, transaction);
   }
 
   private async addPackageManifestViewCount(packageName: string, version: string, transaction: Transaction) {
     const pkg = await this.ensurePackageExists(packageName, version, transaction);
 
-    return this.addManifestViewForAllPeriod(pkg, transaction);
+    return this.addStatsForAllPeriod(pkg, ManifestViewStats, transaction);
   }
 
   private async addTotalDownloadCount(transaction: Transaction) {
     const universePkg = await this.ensureUniversePackageExists(transaction);
 
-    return this.addDownloadForAllPeriod(universePkg, transaction);
+    return this.addStatsForAllPeriod(universePkg, DownloadStats, transaction);
   }
 
   private async addTotalManifestViewCount(transaction: Transaction) {
     const universePkg = await this.ensureUniversePackageExists(transaction);
 
-    return this.addManifestViewForAllPeriod(universePkg, transaction);
+    return this.addStatsForAllPeriod(universePkg, ManifestViewStats, transaction);
   }
 
   private async ensurePackageExists(packageName: string, version: string, transaction: Transaction): Promise<Package> {

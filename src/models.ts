@@ -20,7 +20,7 @@ import {
 
 import type { PeriodType, PeriodValue } from "./types";
 
-export class DownloadStats extends Model<InferAttributes<DownloadStats>, InferCreationAttributes<DownloadStats>> {
+export class StatsModel<T extends Model = Model> extends Model<InferAttributes<T>, InferCreationAttributes<T>> {
   declare id: CreationOptional<number>;
   declare count: number;
   declare packageId: ForeignKey<Package["id"]>;
@@ -30,18 +30,9 @@ export class DownloadStats extends Model<InferAttributes<DownloadStats>, InferCr
   declare package?: NonAttribute<Package>;
 }
 
-export class ManifestViewStats extends Model<
-  InferAttributes<ManifestViewStats>,
-  InferCreationAttributes<ManifestViewStats>
-> {
-  declare id: CreationOptional<number>;
-  declare count: number;
-  declare packageId: ForeignKey<Package["id"]>;
-  declare periodType: PeriodType;
-  declare periodValue: PeriodValue;
+export class DownloadStats extends StatsModel<DownloadStats> {}
 
-  declare package?: NonAttribute<Package>;
-}
+export class ManifestViewStats extends StatsModel<ManifestViewStats> {}
 
 export class Package extends Model<
   InferAttributes<Package, { omit: "downloadStats" | "manifestViewStats" }>,
