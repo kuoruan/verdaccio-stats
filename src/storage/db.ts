@@ -1,11 +1,9 @@
-import debug from "debug";
-import { DataTypes, Op, Sequelize, type Transaction } from "sequelize";
+import { CreationAttributes, DataTypes, Op, Sequelize, type Transaction } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
 import type { ConfigHolder } from "../config";
-
 import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "../constants";
-import { getUmzugLogger } from "../debugger";
+import { debug, getUmzugLogger } from "../debugger";
 import logger from "../logger";
 import { migrations } from "../migrations";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
@@ -117,7 +115,7 @@ export class Database {
       transaction,
     });
 
-    const statsToCreate: DownloadStats[] = [];
+    const statsToCreate: CreationAttributes<DownloadStats>[] = [];
     const statsToUpdate: DownloadStats[] = [];
 
     for (const { periodType, periodValue } of periodValues) {
@@ -128,7 +126,7 @@ export class Database {
       if (existingStat) {
         statsToUpdate.push(existingStat);
       } else {
-        statsToCreate.push(DownloadStats.build({ packageId: pkg.id, periodType, periodValue, count: 1 }));
+        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 });
       }
     }
 
@@ -152,8 +150,8 @@ export class Database {
       transaction,
     });
 
-    const statsToCreate: DownloadStats[] = [];
-    const statsToUpdate: DownloadStats[] = [];
+    const statsToCreate: CreationAttributes<ManifestViewStats>[] = [];
+    const statsToUpdate: ManifestViewStats[] = [];
 
     for (const { periodType, periodValue } of periodValues) {
       const existingStat = existingStats.find(
@@ -163,7 +161,7 @@ export class Database {
       if (existingStat) {
         statsToUpdate.push(existingStat);
       } else {
-        statsToCreate.push(ManifestViewStats.build({ packageId: pkg.id, periodType, periodValue, count: 1 }));
+        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 });
       }
     }
 
@@ -272,10 +270,12 @@ export class Database {
     Package.hasMany(DownloadStats, {
       sourceKey: "id",
       foreignKey: "packageId",
+      as: "downloadStats",
     });
     Package.hasMany(ManifestViewStats, {
       sourceKey: "id",
       foreignKey: "packageId",
+      as: "manifestViewStats",
     });
     DownloadStats.belongsTo(Package, {
       targetKey: "id",
