@@ -56,6 +56,8 @@ middlewares:
     count-manifest-views: true # Optional, whether to count manifest views
 ```
 
+Note: SQLite is the default database type, but for performance reason, it is not recommended for production use. For production, consider using MySQL, PostgreSQL, MariaDB, or MSSQL.
+
 ### Configuration Options
 
 | Option                 | Type             | Default           | Description                                                       |
