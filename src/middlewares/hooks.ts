@@ -1,13 +1,13 @@
 import { tarballUtils } from "@verdaccio/core";
 import type { Application, Handler } from "express";
+
+import type { ConfigHolder } from "../config";
 import {
   ROUTE_MANIFEST_VIEW,
   ROUTE_SCOPED_MANIFEST_VIEW,
   ROUTE_SCOPED_TARBALL_DOWNLOAD,
   ROUTE_TARBALL_DOWNLOAD,
-} from "src/constants";
-
-import type { ConfigHolder } from "../config";
+} from "../constants";
 import logger from "../logger";
 import { Database } from "../storage/db";
 import type { PluginMiddleware } from "../types";
