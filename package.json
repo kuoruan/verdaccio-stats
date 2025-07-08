@@ -79,10 +79,12 @@
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
-        "@tiptap/core": "^2.1.0",
-        "@tiptap/pm": "^2.1.0",
         "@types/react": "^19.0.0"
       }
+    },
+    "overrides": {
+      "@tiptap/core": "^2.7.0",
+      "@tiptap/pm": "^2.7.0"
     }
   }
 }

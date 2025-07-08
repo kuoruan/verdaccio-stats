@@ -97,3 +97,16 @@ export function normalizeFilePath(configPath: string, targetPath: string): strin
 export function wrapPath(urlPath: string) {
   return `${API_BASE_PATH}${urlPath}`;
 }
+
+/**
+ * Interoperably imports a module's default export.
+ *
+ * @param m - The module to import.
+ * @returns The module's default export, or the module itself if it has no default export.
+ */
+export async function interopDefault<T>(m: PromiseLike<T> | T): Promise<T extends { default: infer U } ? U : T> {
+  const resolved = await m;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return (resolved as any).default ?? resolved;
+}

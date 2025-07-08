@@ -1,6 +1,6 @@
 import type { Config } from "@verdaccio/types";
 import type { Options as SequelizeOptions } from "sequelize";
-import z from "zod";
+import { z } from "zod";
 
 import {
   DEFAULT_DATABASE_HOST,

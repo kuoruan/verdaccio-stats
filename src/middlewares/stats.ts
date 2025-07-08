@@ -7,6 +7,8 @@ import { wrapPath } from "../utils";
 
 /**
  * NOTE: This middleware is not implemented yet.
+ *
+ * https://github.com/npm/registry/blob/main/docs/download-counts.md
  */
 export class Stats implements PluginMiddleware {
   constructor(

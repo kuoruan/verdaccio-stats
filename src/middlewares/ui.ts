@@ -5,7 +5,7 @@ import type { ConfigHolder } from "../config";
 import { PERIOD_TYPES } from "../constants";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
 import type { PluginMiddleware } from "../types";
-import { wrapPath } from "../utils";
+import { interopDefault, wrapPath } from "../utils";
 
 const rootPath = wrapPath("/ui");
 
@@ -46,9 +46,9 @@ export class UI implements PluginMiddleware {
 
   private async create(): Promise<Router> {
     const [AdminJS, AdminJSExpress, AdminJSSequelize] = await Promise.all([
-      import("adminjs").then((mod) => mod.default),
-      import("@adminjs/express").then((mod) => mod.default),
-      import("@adminjs/sequelize").then((mod) => mod.default),
+      interopDefault(import("adminjs")),
+      interopDefault(import("@adminjs/express")),
+      interopDefault(import("@adminjs/sequelize")),
     ]);
 
     AdminJS.registerAdapter(AdminJSSequelize);
