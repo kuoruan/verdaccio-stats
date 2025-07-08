@@ -1,8 +1,19 @@
+import { Optional } from "sequelize";
 import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript";
 
 import type { PeriodType, PeriodValue } from "./types";
 
-export abstract class StatsModel<T extends Record<never, never> = any> extends Model<T> {
+export interface StatsAttributes {
+  id: number;
+  count: number;
+  packageId: number;
+  periodType: PeriodType;
+  periodValue: PeriodValue;
+}
+
+export type StatsCreationAttributes = Optional<StatsAttributes, "id">;
+
+export abstract class StatsModel extends Model<StatsAttributes, StatsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -47,7 +58,7 @@ export abstract class StatsModel<T extends Record<never, never> = any> extends M
     },
   ],
 })
-export class DownloadStats extends StatsModel<DownloadStats> {}
+export class DownloadStats extends StatsModel {}
 
 @Table({
   tableName: "manifest_view_stats",
@@ -60,7 +71,15 @@ export class DownloadStats extends StatsModel<DownloadStats> {}
     },
   ],
 })
-export class ManifestViewStats extends StatsModel<ManifestViewStats> {}
+export class ManifestViewStats extends StatsModel {}
+
+export interface PackageAttributes {
+  id: number;
+  name: string;
+  version: string;
+}
+
+export type PackageCreationAttributes = Optional<PackageAttributes, "id">;
 
 @Table({
   tableName: "packages",
@@ -74,7 +93,7 @@ export class ManifestViewStats extends StatsModel<ManifestViewStats> {}
     },
   ],
 })
-export class Package extends Model<Package> {
+export class Package extends Model<PackageAttributes, PackageCreationAttributes> {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,

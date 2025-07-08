@@ -1,4 +1,4 @@
-import type { CreationAttributes, QueryInterface } from "sequelize";
+import type { QueryInterface } from "sequelize";
 import type { RunnableMigration } from "umzug";
 
 import { UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from "./constants";
@@ -15,7 +15,7 @@ export const migrations: RunnableMigration<QueryInterface>[] = [
           name: UNIVERSE_PACKAGE_NAME,
           version: UNIVERSE_PACKAGE_VERSION,
         },
-      ] as CreationAttributes<Package>[]);
+      ]);
     },
     down: async () => {
       return Promise.all([Package.drop(), DownloadStats.drop(), ManifestViewStats.drop()]);

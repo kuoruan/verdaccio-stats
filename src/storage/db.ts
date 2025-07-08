@@ -1,4 +1,4 @@
-import { type CreationAttributes, Op, QueryInterface, type Transaction } from "sequelize";
+import { Op, QueryInterface, type Transaction } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import { SequelizeStorage, Umzug } from "umzug";
 
@@ -7,7 +7,7 @@ import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from ".
 import { debug, getUmzugLogger } from "../debugger";
 import logger from "../logger";
 import { migrations } from "../migrations";
-import { DownloadStats, ManifestViewStats, Package } from "../models";
+import { DownloadStats, ManifestViewStats, Package, type StatsCreationAttributes } from "../models";
 import { getCurrentPeriodValue } from "../utils";
 
 export class Database {
@@ -119,7 +119,7 @@ export class Database {
       transaction,
     });
 
-    const statsToCreate: CreationAttributes<InstanceType<T>>[] = [];
+    const statsToCreate: StatsCreationAttributes[] = [];
     const statsIdsToUpdate: number[] = [];
 
     for (const { periodType, periodValue } of periodValues) {
@@ -130,9 +130,7 @@ export class Database {
       if (existingStat) {
         statsIdsToUpdate.push(existingStat.id);
       } else {
-        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 } as CreationAttributes<
-          InstanceType<T>
-        >);
+        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 });
       }
     }
 
