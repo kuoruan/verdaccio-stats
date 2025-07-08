@@ -1,19 +1,9 @@
-import { Optional } from "sequelize";
+import type { InferAttributes, InferCreationAttributes, NonAttribute } from "sequelize";
 import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript";
 
 import type { PeriodType, PeriodValue } from "./types";
 
-export interface StatsAttributes {
-  id: number;
-  count: number;
-  packageId: number;
-  periodType: PeriodType;
-  periodValue: PeriodValue;
-}
-
-export type StatsCreationAttributes = Optional<StatsAttributes, "id">;
-
-export abstract class StatsModel extends Model<StatsAttributes, StatsCreationAttributes> {
+export abstract class StatsModel extends Model<InferAttributes<StatsModel>, InferCreationAttributes<StatsModel>> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -44,7 +34,7 @@ export abstract class StatsModel extends Model<StatsAttributes, StatsCreationAtt
     targetKey: "id",
     foreignKey: "packageId",
   })
-  declare package: Package | null;
+  declare package: NonAttribute<Package>;
 }
 
 @Table({
@@ -73,14 +63,6 @@ export class DownloadStats extends StatsModel {}
 })
 export class ManifestViewStats extends StatsModel {}
 
-export interface PackageAttributes {
-  id: number;
-  name: string;
-  version: string;
-}
-
-export type PackageCreationAttributes = Optional<PackageAttributes, "id">;
-
 @Table({
   tableName: "packages",
   timestamps: true,
@@ -93,7 +75,7 @@ export type PackageCreationAttributes = Optional<PackageAttributes, "id">;
     },
   ],
 })
-export class Package extends Model<PackageAttributes, PackageCreationAttributes> {
+export class Package extends Model<InferAttributes<Package>, InferCreationAttributes<Package>> {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
@@ -108,13 +90,13 @@ export class Package extends Model<PackageAttributes, PackageCreationAttributes>
 
   // displayName is a virtual property that combines name and version
   @Column(DataType.VIRTUAL(DataType.STRING, ["name", "version"]))
-  get displayName(): string {
+  get displayName(): NonAttribute<string> {
     return `${this.getDataValue("name")}@${this.getDataValue("version")}`;
   }
 
   @HasMany(() => DownloadStats, { sourceKey: "id", foreignKey: "packageId" })
-  declare downloadStats: DownloadStats[];
+  declare downloadStats: NonAttribute<DownloadStats[]>;
 
   @HasMany(() => ManifestViewStats, { sourceKey: "id", foreignKey: "packageId" })
-  declare manifestViewStats: ManifestViewStats[];
+  declare manifestViewStats: NonAttribute<ManifestViewStats[]>;
 }
