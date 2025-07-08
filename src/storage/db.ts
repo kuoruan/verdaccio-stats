@@ -1,4 +1,5 @@
-import { type CreationAttributes, DataTypes, Op, Sequelize, type Transaction } from "sequelize";
+import { type CreationAttributes, Op, QueryInterface, type Transaction } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
 import { SequelizeStorage, Umzug } from "umzug";
 
 import type { ConfigHolder } from "../config";
@@ -6,13 +7,13 @@ import { PERIOD_TYPES, UNIVERSE_PACKAGE_NAME, UNIVERSE_PACKAGE_VERSION } from ".
 import { debug, getUmzugLogger } from "../debugger";
 import logger from "../logger";
 import { migrations } from "../migrations";
-import { DownloadStats, ManifestViewStats, Package, type StatsModel } from "../models";
+import { DownloadStats, ManifestViewStats, Package } from "../models";
 import { getCurrentPeriodValue } from "../utils";
 
 export class Database {
   private config: ConfigHolder;
   private sequelize: Sequelize;
-  private umzug: Umzug<Sequelize>;
+  private umzug: Umzug<QueryInterface>;
 
   private universePackage: null | Package = null;
 
@@ -33,10 +34,11 @@ export class Database {
       dialectOptions: {
         timeout: 30_000,
       },
+      models: [Package, DownloadStats, ManifestViewStats],
     });
 
     const umzug = new Umzug({
-      context: () => sequelize,
+      context: () => sequelize.getQueryInterface(),
       migrations: migrations,
       storage: new SequelizeStorage({ sequelize, modelName: "migration_meta" }),
       logger: getUmzugLogger(),
@@ -45,73 +47,6 @@ export class Database {
     this.config = config;
     this.sequelize = sequelize;
     this.umzug = umzug;
-
-    this.init();
-  }
-
-  private init() {
-    Package.init(
-      {
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        name: { allowNull: false, type: DataTypes.STRING(100) },
-        version: { allowNull: false, type: DataTypes.STRING(50) },
-        displayName: {
-          type: DataTypes.VIRTUAL(DataTypes.STRING, ["name", "version"]),
-          get() {
-            return `${this.getDataValue("name")}@${this.getDataValue("version")}`;
-          },
-          set() {
-            throw new Error("Virtual property, cannot be set");
-          },
-        },
-      },
-      { sequelize: this.sequelize, tableName: "packages", underscored: true },
-    );
-    DownloadStats.init(
-      {
-        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
-        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
-      },
-      {
-        sequelize: this.sequelize,
-        tableName: "download_stats",
-        underscored: true,
-      },
-    );
-    ManifestViewStats.init(
-      {
-        count: { allowNull: false, type: DataTypes.BIGINT, defaultValue: 0 },
-        id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
-        packageId: { allowNull: false, type: DataTypes.INTEGER, references: { model: Package, key: "id" } },
-        periodType: { allowNull: false, type: DataTypes.ENUM(...PERIOD_TYPES), values: PERIOD_TYPES },
-        periodValue: { allowNull: false, type: DataTypes.STRING(20) },
-      },
-      { sequelize: this.sequelize, tableName: "manifest_view_stats", underscored: true },
-    );
-
-    Package.hasMany(DownloadStats, {
-      sourceKey: "id",
-      foreignKey: "packageId",
-      as: "downloadStats",
-    });
-    Package.hasMany(ManifestViewStats, {
-      sourceKey: "id",
-      foreignKey: "packageId",
-      as: "manifestViewStats",
-    });
-    DownloadStats.belongsTo(Package, {
-      targetKey: "id",
-      foreignKey: "packageId",
-      as: "package",
-    });
-    ManifestViewStats.belongsTo(Package, {
-      targetKey: "id",
-      foreignKey: "packageId",
-      as: "package",
-    });
   }
 
   public async addDownloadCount(packageName: string, version: string) {
@@ -166,7 +101,7 @@ export class Database {
     return this.umzug.down();
   }
 
-  private async addStatsForAllPeriod<T extends typeof StatsModel<StatsModel>>(
+  private async addStatsForAllPeriod<T extends typeof DownloadStats | typeof ManifestViewStats>(
     pkg: Package,
     statsModel: T,
     transaction: Transaction,
@@ -195,7 +130,9 @@ export class Database {
       if (existingStat) {
         statsIdsToUpdate.push(existingStat.id);
       } else {
-        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 } as any);
+        statsToCreate.push({ packageId: pkg.id, periodType, periodValue, count: 1 } as CreationAttributes<
+          InstanceType<T>
+        >);
       }
     }
 
