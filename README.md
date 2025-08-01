@@ -70,7 +70,6 @@ Note: SQLite is the default database type, but for performance reason, it is not
 | `database.password`    | string           |                   | Database password                                                 |
 | `database.host`        | string           | `localhost`       | Database host                                                     |
 | `database.port`        | number           | `3306`            | Database port                                                     |
-| `file`                 | string           | `stats.db`        | Path to the file where stats are stored                           |
 | `iso-week`             | boolean          | `false`           | Whether to use ISO week format                                    |
 | `count-downloads`      | boolean          | `true`            | Whether to count downloads                                        |
 | `count-manifest-views` | boolean          | `true`            | Whether to count manifest views                                   |
