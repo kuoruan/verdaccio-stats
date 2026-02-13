@@ -17,13 +17,13 @@ jobs:
       matrix:
         include:
           - node-version: 20
-            pnpm-version: latest
-          - node-version: 22
             pnpm-version: 10
+          - node-version: 22
+            pnpm-version: latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -34,13 +34,16 @@ jobs:
           run_install: false
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Rebuild native dependencies
+        run: pnpm rebuild sqlite3
 
       - name: Lint
         run: pnpm lint
