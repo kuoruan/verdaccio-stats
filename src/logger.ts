@@ -9,6 +9,7 @@ function noop() {
 const dummyLogger: Logger = {
   child: () => dummyLogger,
   debug: noop,
+  fatal: noop,
   error: noop,
   http: noop,
   info: noop,
