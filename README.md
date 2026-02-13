@@ -81,7 +81,7 @@ After installing and configuring the plugin, it will automatically begin collect
 You can view the statistics by visiting the following URL:
 
 ```
-http://your-registry.com/-/verdaccio/stats/ui
+http://your-registry.com/-/web/stats
 ```
 
 ## License

@@ -2,12 +2,14 @@ import type { ResourceOptions, ResourceWithOptions } from "adminjs";
 import type { Application, Router } from "express";
 
 import type { ConfigHolder } from "../config";
-import { PERIOD_TYPES } from "../constants";
+import { PERIOD_TYPES, WEB_PATH } from "../constants";
 import { DownloadStats, ManifestViewStats, Package } from "../models";
 import type { PluginMiddleware } from "../types";
-import { interopDefault, wrapPath } from "../utils";
+import { interopDefault } from "../utils";
 
-const rootPath = wrapPath("/ui");
+const legacyWebPath = "/-/verdaccio/stats/ui";
+
+const webPath = WEB_PATH;
 
 const defaultActions = {
   new: { isAccessible: false },
@@ -35,7 +37,11 @@ export class UI implements PluginMiddleware {
   }
 
   register_middlewares(app: Application) {
-    app.use(rootPath, (req, res, next) => {
+    app.use(legacyWebPath, (req, res) => {
+      return res.redirect(301, WEB_PATH + req.url);
+    });
+
+    app.use(webPath, (req, res, next) => {
       if (this.adminRouter) {
         return this.adminRouter(req, res, next);
       } else {
@@ -110,7 +116,7 @@ export class UI implements PluginMiddleware {
           },
         ] satisfies (false | ResourceWithOptions)[]
       ).filter(Boolean),
-      rootPath: rootPath,
+      rootPath: webPath,
       branding: {
         companyName: this.config.title,
         logo: this.config.logo,

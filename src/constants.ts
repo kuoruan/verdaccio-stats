@@ -35,4 +35,6 @@ export const ROUTE_MANIFEST_VIEW = "/:package/:version?";
 
 export const ROUTE_SCOPED_MANIFEST_VIEW = "/@:scope/:package/:version?";
 
-export const API_BASE_PATH = "/-/verdaccio/stats";
+export const WEB_PATH = "/-/web/stats";
+
+export const API_BASE_PATH = "/-/stats";
