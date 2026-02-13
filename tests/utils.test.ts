@@ -3,8 +3,8 @@ import path from "node:path";
 import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
 
-import { PERIOD_VALUE_TOTAL } from "../src/constants";
-import { getPeriodValue, normalizeFilePath } from "../src/utils";
+import { PERIOD_VALUE_TOTAL } from "@/constants";
+import { getPeriodValue, normalizeFilePath } from "@/utils";
 
 describe("getPeriodValue", () => {
   const testDate = dayjs("2023-05-15");
