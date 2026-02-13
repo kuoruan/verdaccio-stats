@@ -87,6 +87,9 @@
     "overrides": {
       "@tiptap/core": "^2.7.2",
       "@tiptap/pm": "^2.7.2"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "sqlite3"
+    ]
   }
 }

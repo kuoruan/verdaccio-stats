@@ -42,9 +42,6 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Rebuild native dependencies
-        run: pnpm rebuild sqlite3
-
       - name: Lint
         run: pnpm lint
 
