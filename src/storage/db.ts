@@ -74,8 +74,8 @@ export class Database {
         [
           this.addTotalManifestViewCount(t),
           this.addPackageManifestViewCount(packageName, UNIVERSE_PACKAGE_VERSION, t),
-          version && this.addPackageManifestViewCount(packageName, version, t),
-        ].filter(Boolean),
+          !!version && this.addPackageManifestViewCount(packageName, version, t),
+        ].filter((item) => item !== false),
       );
 
       await t.commit();
@@ -112,10 +112,7 @@ export class Database {
     }));
 
     const existingStats = await statsModel.findAll({
-      where: {
-        packageId: pkg.id,
-        [Op.or]: periodValues,
-      },
+      where: { packageId: pkg.id, [Op.or]: periodValues },
       transaction,
     });
 
