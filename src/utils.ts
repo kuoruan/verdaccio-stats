@@ -68,6 +68,15 @@ export function getCurrentPeriodValue(periodType: PeriodType, isoWeek?: boolean)
 }
 
 /**
+ * Get the current date in "YYYY-MM-DD" format.
+ *
+ * @returns {string} The current date in "YYYY-MM-DD" format.
+ */
+export function getCurrentDate(): string {
+  return dayjs().format("YYYY-MM-DD");
+}
+
+/**
  * Check if the status code is a success status code.
  *
  * @param statusCode {number} - The status code.

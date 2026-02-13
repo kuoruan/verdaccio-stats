@@ -65,8 +65,7 @@ export class Plugin implements pluginUtils.ExpressMiddleware<StatsConfig, never,
 
   private async initDB(db: Database): Promise<void> {
     try {
-      await db.authenticate();
-      await db.migrate();
+      await db.initialize();
     } catch (err) {
       logger.error({ err }, "Failed to initialize database; @{err}");
       process.exit(1);

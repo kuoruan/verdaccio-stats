@@ -54,6 +54,8 @@ middlewares:
     iso-week: false # Optional, whether to use ISO week format
     count-downloads: true # Optional, whether to count downloads
     count-manifest-views: true # Optional, whether to count manifest views
+    flush-interval: 5s # Optional: flush interval (number ms or duration string). 0 means realtime flush.
+    max-pending-entries: 10000 # Optional: flush when pending entry keys reach this size
 ```
 
 Note: SQLite is the default database type, but for performance reason, it is not recommended for production use. For production, consider using MySQL, PostgreSQL, MariaDB, or MSSQL.
@@ -73,6 +75,8 @@ Note: SQLite is the default database type, but for performance reason, it is not
 | `iso-week`             | boolean          | `false`           | Whether to use ISO week format                                    |
 | `count-downloads`      | boolean          | `true`            | Whether to count downloads                                        |
 | `count-manifest-views` | boolean          | `true`            | Whether to count manifest views                                   |
+| `flush-interval`       | number or string | `5000`            | Flush interval in ms or a duration string (e.g. `5s`, `1m`); `0` = realtime, `<0` disables timer |
+| `max-pending-entries`  | number           | `10000`           | Flush when the number of pending entry keys reaches this threshold |
 
 ## Usage
 

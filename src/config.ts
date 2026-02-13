@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 import type { Config } from "@verdaccio/types";
 import type { Options as SequelizeOptions } from "sequelize";
 import { z } from "zod";
@@ -12,6 +14,9 @@ import {
 } from "./constants";
 import logger from "./logger";
 import { normalizeFilePath } from "./utils";
+
+const require = createRequire(import.meta.url);
+const ms = require("ms") as (value: string) => number | undefined;
 
 const statsConfig = z
   .object({
@@ -58,8 +63,30 @@ const statsConfig = z
       .boolean()
       .optional()
       .default(() => true),
+    "flush-interval": z
+      .union([z.number().int().nonnegative(), z.string().min(1)])
+      .optional()
+      .default(() => 5000),
+    "max-pending-entries": z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .default(() => 10_000),
   })
   .superRefine((data, ctx) => {
+    const flushInterval = data["flush-interval"];
+    if (typeof flushInterval === "string") {
+      const parsed = ms(flushInterval);
+      if (typeof parsed !== "number" || !Number.isFinite(parsed) || parsed < 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Flush interval must be a valid duration string or a non-negative number (ms)",
+          path: ["flush-interval"],
+        });
+      }
+    }
+
     if (data.dialect === "sqlite") {
       if (typeof data.database !== "string" || !data.database) {
         ctx.addIssue({
@@ -93,8 +120,10 @@ export interface ConfigHolder {
   countDownloads: boolean;
   countManifestViews: boolean;
   favicon: string;
+  flushInterval: number;
   isoWeek: boolean;
   logo?: string;
+  maxPendingEntries: number;
   sequelizeOptions: SequelizeOptions;
   title: string;
 }
@@ -135,6 +164,20 @@ export class ParsedPluginConfig implements ConfigHolder {
 
   get isoWeek(): boolean {
     return this.config["iso-week"];
+  }
+
+  get flushInterval(): number {
+    const v = this.config["flush-interval"];
+    if (typeof v === "number") return v;
+    return ms(v) ?? 0;
+  }
+
+  get maxPendingEntries(): number {
+    return this.config["max-pending-entries"];
+  }
+
+  get maxPendingKeys(): number {
+    return this.maxPendingEntries;
   }
 
   get logo(): string | undefined {
