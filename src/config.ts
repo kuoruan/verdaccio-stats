@@ -1,6 +1,5 @@
-import { createRequire } from "node:module";
-
 import type { Config } from "@verdaccio/types";
+import ms, { type StringValue } from "ms";
 import type { Options as SequelizeOptions } from "sequelize";
 import { z } from "zod";
 
@@ -14,9 +13,6 @@ import {
 } from "./constants";
 import logger from "./logger";
 import { normalizeFilePath } from "./utils";
-
-const require = createRequire(import.meta.url);
-const ms = require("ms") as (value: string) => number | undefined;
 
 const statsConfig = z
   .object({
@@ -77,7 +73,7 @@ const statsConfig = z
   .superRefine((data, ctx) => {
     const flushInterval = data["flush-interval"];
     if (typeof flushInterval === "string") {
-      const parsed = ms(flushInterval);
+      const parsed = ms(flushInterval as StringValue);
       if (typeof parsed !== "number" || !Number.isFinite(parsed) || parsed < 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -169,7 +165,7 @@ export class ParsedPluginConfig implements ConfigHolder {
   get flushInterval(): number {
     const v = this.config["flush-interval"];
     if (typeof v === "number") return v;
-    return ms(v) ?? 0;
+    return ms(v as StringValue) ?? 0;
   }
 
   get maxPendingEntries(): number {
