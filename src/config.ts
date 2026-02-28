@@ -20,6 +20,10 @@ const statsConfig = z
       .enum(DIALECTS)
       .optional()
       .default(() => DEFAULT_DIALECT),
+    "dialect-options": z
+      .record(z.string(), z.unknown())
+      .optional()
+      .default(() => ({})),
     database: z.union([
       z.string().default(() => DEFAULT_SQLITE_STORAGE),
       z.object({
@@ -120,6 +124,7 @@ export interface ConfigHolder {
   isoWeek: boolean;
   logo?: string;
   maxPendingEntries: number;
+  dialectOptions: Record<string, unknown>;
   sequelizeOptions: SequelizeOptions;
   title: string;
 }
@@ -185,28 +190,39 @@ export class ParsedPluginConfig implements ConfigHolder {
     return this.verdaccioConfig.web?.logo;
   }
 
+  get dialectOptions(): Record<string, unknown> {
+    return this.config["dialect-options"];
+  }
+
   get sequelizeOptions(): SequelizeOptions {
-    if (this.config.dialect === "sqlite" && typeof this.config.database === "string") {
+    const dialect = this.config.dialect;
+
+    if (dialect === "sqlite") {
       return {
         dialect: "sqlite",
-        storage: normalizeFilePath(this.configPath, this.config.database),
+        storage: normalizeFilePath(
+          this.configPath,
+          typeof this.config.database === "string" ? this.config.database : DEFAULT_SQLITE_STORAGE,
+        ),
       };
     }
 
-    if (this.config.dialect !== "sqlite" && typeof this.config.database === "object") {
-      return {
-        dialect: this.config.dialect,
-        database: this.config.database.name,
-        username: this.config.database.username,
-        password: this.config.database.password,
-        host: this.config.database.host,
-        port: this.config.database.port,
-      };
-    }
+    const dbConfig = (this.config.database ?? {}) as {
+      name: string;
+      username: string;
+      password: string;
+      host: string;
+      port: number;
+    };
 
+    // Non-SQLite dialects
     return {
-      dialect: DEFAULT_DIALECT,
-      storage: normalizeFilePath(this.configPath, DEFAULT_SQLITE_STORAGE),
+      dialect: dialect,
+      database: dbConfig.name,
+      username: dbConfig.username,
+      password: dbConfig.password,
+      host: dbConfig.host,
+      port: dbConfig.port,
     };
   }
 

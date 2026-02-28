@@ -36,9 +36,7 @@ export class Database {
         acquire: 30_000,
         idle: 10_000,
       },
-      dialectOptions: {
-        timeout: 30_000,
-      },
+      dialectOptions: config.dialectOptions,
       models: [Package, DownloadStats, ManifestViewStats],
     });
 

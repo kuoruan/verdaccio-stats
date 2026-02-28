@@ -78,21 +78,22 @@ For other databases, install the corresponding driver:
 
 ### Configuration Options
 
-| Option                 | Type             | Default           | Description                                                       |
-| ---------------------- | ---------------- | ----------------- | ----------------------------------------------------------------- |
-| `enabled`              | boolean          | `true`            | Whether the plugin is enabled                                     |
-| `dialect`              | string           | `sqlite`          | Database type (`sqlite`, `mysql`, `postgres`, `mariadb`, `mssql`, `db2`, `snowflake`, `oracle`) |
-| `database`             | string or object | `stats.db`      | Database configuration                                            |
-| `database.name`        | string           | `verdaccio_stats` | Database name                                                     |
-| `database.username`    | string           |                   | Database username                                                 |
-| `database.password`    | string           |                   | Database password                                                 |
-| `database.host`        | string           | `localhost`       | Database host                                                     |
-| `database.port`        | number           | `3306`            | Database port                                                     |
-| `iso-week`             | boolean          | `false`           | Whether to use ISO week format                                    |
-| `count-downloads`      | boolean          | `true`            | Whether to count downloads                                        |
-| `count-manifest-views` | boolean          | `true`            | Whether to count manifest views                                   |
+| Option                 | Type             | Default           | Description                                                                                      |
+| ---------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| `enabled`              | boolean          | `true`            | Whether the plugin is enabled                                                                    |
+| `dialect`              | string           | `sqlite`          | Database type (`sqlite`, `mysql`, `postgres`, `mariadb`, `mssql`, `db2`, `snowflake`, `oracle`)  |
+| `dialect-options`      | object           | `{}`              | Additional options to pass to the database driver                                                |
+| `database`             | string or object | `stats.db`        | Database configuration                                                                           |
+| `database.name`        | string           | `verdaccio_stats` | Database name                                                                                    |
+| `database.username`    | string           |                   | Database username                                                                                |
+| `database.password`    | string           |                   | Database password                                                                                |
+| `database.host`        | string           | `localhost`       | Database host                                                                                    |
+| `database.port`        | number           | `3306`            | Database port                                                                                    |
+| `iso-week`             | boolean          | `false`           | Whether to use ISO week format                                                                   |
+| `count-downloads`      | boolean          | `true`            | Whether to count downloads                                                                       |
+| `count-manifest-views` | boolean          | `true`            | Whether to count manifest views                                                                  |
 | `flush-interval`       | number or string | `5000`            | Flush interval in ms or a duration string (e.g. `5s`, `1m`); `0` = realtime, `<0` disables timer |
-| `max-pending-entries`  | number           | `10000`           | Flush when the number of pending entry keys reaches this threshold |
+| `max-pending-entries`  | number           | `10000`           | Flush when the number of pending entry keys reaches this threshold                               |
 
 ## Usage
 
