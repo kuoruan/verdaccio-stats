@@ -7,7 +7,7 @@ export const plugin = {
 
 export const pluginKey = name.replace("verdaccio-", "");
 
-export const DIALECTS = ["mariadb", "mssql", "mysql", "postgres", "sqlite"] as const;
+export const DIALECTS = ["mariadb", "mssql", "mysql", "postgres", "sqlite", "db2", "snowflake", "oracle"] as const;
 
 export const DEFAULT_DIALECT = "sqlite" as (typeof DIALECTS)[number];
 

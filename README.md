@@ -42,7 +42,7 @@ Add the plugin to your Verdaccio config file:
 middlewares:
   stats:
     enabled: true
-    dialect: sqlite # Optional: sqlite, mysql, postgres, mariadb, mssql (default: sqlite)
+    dialect: sqlite # Optional: sqlite, mysql, postgres, mariadb, mssql, db2, snowflake, oracle (default: sqlite)
     database: stats.db # For SQLite: path to database file
     # For other databases, use object configuration:
     # database:
@@ -73,13 +73,15 @@ For other databases, install the corresponding driver:
 - MSSQL: `tedious`
 - SQLite: `sqlite3` (not recommended for production)
 - Oracle: `oracledb`
+- DB2: `ibm_db`
+- Snowflake: `snowflake-sdk`
 
 ### Configuration Options
 
 | Option                 | Type             | Default           | Description                                                       |
 | ---------------------- | ---------------- | ----------------- | ----------------------------------------------------------------- |
 | `enabled`              | boolean          | `true`            | Whether the plugin is enabled                                     |
-| `dialect`              | string           | `sqlite`          | Database type (`sqlite`, `mysql`, `postgres`, `mariadb`, `mssql`) |
+| `dialect`              | string           | `sqlite`          | Database type (`sqlite`, `mysql`, `postgres`, `mariadb`, `mssql`, `db2`, `snowflake`, `oracle`) |
 | `database`             | string or object | `stats.db`      | Database configuration                                            |
 | `database.name`        | string           | `verdaccio_stats` | Database name                                                     |
 | `database.username`    | string           |                   | Database username                                                 |
