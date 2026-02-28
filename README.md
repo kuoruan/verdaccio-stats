@@ -28,7 +28,7 @@ Or install to verdaccio plugin folder:
 mkdir -p ./install-here/
 npm install --global-style \
   --bin-links=false --save=false --package-lock=false \
-  --omit=dev --omit=optional \
+  --omit=dev --omit=optional --omit=peer \
   --prefix ./install-here/ \
   verdaccio-stats@latest
 mv ./install-here/node_modules/verdaccio-stats/ /path/to/verdaccio/plugins/
