@@ -14,6 +14,7 @@
     "outDir": "lib",
     "noEmit": true,
     "noImplicitAny": false,
+    "importHelpers": false, // Disable tslib
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },

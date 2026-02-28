@@ -29,6 +29,7 @@ export default defineConfig({
       deps: true,
       devDeps: true,
       peerDeps: true,
+      exclude: ["tslib"],
     }),
     replace({
       preventAssignment: true,
