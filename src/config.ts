@@ -138,9 +138,14 @@ export class ParsedPluginConfig implements ConfigHolder {
     try {
       this.config = statsConfig.parse(config);
     } catch (err: any) {
-      const fieldErrors = z.treeifyError(err).errors;
+      const flattened = z.flattenError<StatsConfig>(err);
 
-      logger.error({ errors: fieldErrors }, "Invalid config for verdaccio stats plugin, @{errors}");
+      const errorMessages = [
+        ...flattened.formErrors,
+        ...Object.entries(flattened.fieldErrors).flatMap(([key, errs]) => (errs ?? []).map((e) => `[${key}] ${e}`)),
+      ];
+
+      logger.error({ errors: errorMessages.join("\n") }, "Invalid config for verdaccio stats plugin:\n@{errors}");
 
       process.exit(1);
     }
