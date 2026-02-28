@@ -76,7 +76,7 @@ const statsConfig = z
       const parsed = ms(flushInterval as StringValue);
       if (typeof parsed !== "number" || !Number.isFinite(parsed) || parsed < 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Flush interval must be a valid duration string or a non-negative number (ms)",
           path: ["flush-interval"],
         });
@@ -86,7 +86,7 @@ const statsConfig = z
     if (data.dialect === "sqlite") {
       if (typeof data.database !== "string" || !data.database) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "SQLite storage path is required and must be a non-empty string",
           path: ["storage"],
         });
@@ -96,7 +96,7 @@ const statsConfig = z
         for (const key of ["name", "username", "password", "host", "port"] as const) {
           if (!data.database[key]) {
             ctx.addIssue({
-              code: z.ZodIssueCode.custom,
+              code: "custom",
               message: `Database ${key} is required for non-SQLite dialects`,
               path: ["database", key],
             });
@@ -104,7 +104,7 @@ const statsConfig = z
         }
       } else {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Database configuration is required for non-SQLite dialects",
           path: ["database"],
         });
@@ -138,7 +138,7 @@ export class ParsedPluginConfig implements ConfigHolder {
     try {
       this.config = statsConfig.parse(config);
     } catch (err: any) {
-      const fieldErrors = (err as z.ZodError).flatten().fieldErrors;
+      const fieldErrors = z.treeifyError(err).errors;
 
       logger.error({ errors: fieldErrors }, "Invalid config for verdaccio stats plugin, @{errors}");
 
