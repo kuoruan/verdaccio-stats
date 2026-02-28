@@ -60,6 +60,20 @@ middlewares:
 
 Note: SQLite is the default database type, but for performance reason, it is not recommended for production use. For production, consider using MySQL, PostgreSQL, MariaDB, or MSSQL.
 
+You'll also need to ensure that the appropriate database driver is installed. For example, if you're using MySQL, you would need to install `mysql2`:
+
+```bash
+npm install -g mysql2
+```
+
+For other databases, install the corresponding driver:
+
+- PostgreSQL: `pg` and `pg-hstore`
+- MariaDB: `mariadb`
+- MSSQL: `tedious`
+- SQLite: `sqlite3` (not recommended for production)
+- Oracle: `oracledb`
+
 ### Configuration Options
 
 | Option                 | Type             | Default           | Description                                                       |
